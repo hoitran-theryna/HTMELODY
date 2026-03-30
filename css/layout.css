@@ -191,6 +191,8 @@
   /* === Sidebar drawer === */
   .sidebar { transform: translateX(-100%); box-shadow: none; }
   .sidebar.open { transform: translateX(0); box-shadow: 4px 0 32px rgba(0,0,0,0.5); }
+  /* Logo + brand name không bị khuất sau status bar iPhone */
+  .sidebar-header { padding-top: calc(var(--space-lg) + env(safe-area-inset-top)); }
 
   /* === Layout === */
   .main-wrapper { margin-left: 0; }
@@ -213,6 +215,9 @@
 
   /* === Bottom tab bar === */
   .bottom-tabbar { display: block; }
+
+  /* === Notification dropdown: fit màn hình nhỏ === */
+  .notification-dropdown { width: calc(100vw - 2 * var(--space-sm)); right: calc(-1 * var(--space-sm)); }
 
   /* === Page header === */
   .page-header { flex-direction: column; align-items: flex-start; gap: var(--space-xs); margin-bottom: var(--space-md); }

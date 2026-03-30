@@ -171,13 +171,14 @@
   .modal, .modal.modal-lg {
     width: 100% !important;
     max-width: 100% !important;
-    max-height: 90vh;
+    max-height: 90vh;       /* fallback cho browser cũ */
+    max-height: 90dvh;     /* dvh co lại khi bàn phím iPhone bật lên */
     border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
     margin: 0 !important;
   }
   .modal-header { padding: var(--space-md); }
   .modal-header h2 { font-size: var(--font-size-base); }
-  .modal-body { padding: var(--space-md); }
+  .modal-body { padding: var(--space-md); overflow-y: auto; }
   .modal-body > div[style*="grid-template-columns"] {
     /* Collapse bất kỳ inline grid nào về 1 cột */
     display: flex !important;
@@ -186,8 +187,11 @@
   }
   .modal-footer {
     padding: var(--space-sm) var(--space-md);
+    /* Đẩy buttons lên trên home indicator iPhone */
+    padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom));
     gap: var(--space-xs);
     flex-wrap: wrap;
+    flex-shrink: 0;
   }
   .modal-footer .btn { flex: 1; justify-content: center; min-width: 100px; }
   .form-group { margin-bottom: var(--space-sm); }
