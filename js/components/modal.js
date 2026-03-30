@@ -23,16 +23,20 @@ export function showModal(title, content, options = {}) {
     overlay.querySelector('.modal-body').appendChild(content);
   }
 
+  let closed = false;
+  const escHandler = (e) => { if (e.key === 'Escape') close(); };
+
   const close = () => {
+    if (closed) return;
+    closed = true;
+    document.removeEventListener('keydown', escHandler);
     overlay.style.animation = 'fade-out 0.2s ease-in forwards';
     setTimeout(() => { overlay.remove(); if (onClose) onClose(); }, 200);
   };
 
   overlay.querySelector('#modal-close-btn').addEventListener('click', close);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
-  document.addEventListener('keydown', function handler(e) {
-    if (e.key === 'Escape') { close(); document.removeEventListener('keydown', handler); }
-  });
+  document.addEventListener('keydown', escHandler);
 
   document.body.appendChild(overlay);
   return { close, overlay, body: overlay.querySelector('.modal-body'), footerEl: overlay.querySelector('.modal-footer') };

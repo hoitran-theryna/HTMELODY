@@ -55,10 +55,14 @@ class Router {
     if (this.container) {
       this.container.classList.add('page-exit');
       setTimeout(() => {
-        this.container.innerHTML = '';
+        // Clone element để xóa sạch toàn bộ accumulated event listeners
+        const fresh = this.container.cloneNode(false);
+        this.container.parentNode.replaceChild(fresh, this.container);
+        this.container = fresh;
+
         this.container.classList.remove('page-exit');
         this.container.classList.add('page-enter');
-        
+
         try {
           route.handler(this.container);
         } catch(e) {
@@ -68,7 +72,7 @@ class Router {
             <p>Module này đang được cập nhật hoặc có lỗi xảy ra.</p>
           </div>`;
         }
-        
+
         setTimeout(() => this.container.classList.remove('page-enter'), 300);
       }, 150);
     }

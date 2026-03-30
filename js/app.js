@@ -8,7 +8,6 @@ import router from './router.js';
 import store from './store.js';
 import { renderSidebar } from './components/sidebar.js';
 import { renderHeader, startClock, initHeaderEvents } from './components/header.js';
-import { ICONS } from './components/icons.js';
 import { showToast } from './components/toast.js';
 
 // Import modules
@@ -25,10 +24,12 @@ import renderFund from './modules/fund.js';
 import renderTax from './modules/tax.js';
 import renderAssets from './modules/assets.js';
 import renderReports from './modules/reports.js';
+import renderCustomers from './modules/customers.js';
 
 // Register routes
 router.register('dashboard', renderDashboard, 'Bảng Điều khiển');
 router.register('orders', renderOrders, 'Quản lý Đơn hàng');
+router.register('customers', renderCustomers, 'Khách hàng');
 router.register('contracts', renderContracts, 'Biểu Mẫu Hợp Đồng');
 router.register('production', renderProduction, 'Tiến độ Sản xuất');
 router.register('events', renderEvents, 'Tổ chức Sự kiện');
@@ -53,11 +54,9 @@ function renderLoginPage() {
     <div class="login-screen">
       <div class="login-card" style="max-width:400px">
         <div class="login-logo">
-          <div class="login-logo-icon" style="background:linear-gradient(135deg, #10b981, #06b6d4)">
-            ${ICONS.zap}
-          </div>
-          <h1>LED & EVENTS</h1>
-          <p>Hệ thống Quản lý ERP Chuyên dụng</p>
+          <img src="/logo.png" alt="Landlight Art" style="width:110px;height:110px;border-radius:16px;object-fit:cover;box-shadow:0 8px 32px rgba(0,100,255,0.3);margin-bottom:4px" />
+          <h1>Landlight Art</h1>
+          <p>Hệ thống ERP — LED & Tổ chức sự kiện</p>
         </div>
         <div class="login-form">
           <div class="form-group">
@@ -75,6 +74,7 @@ function renderLoginPage() {
         <div style="margin-top:24px;background:var(--bg-tertiary);padding:16px;border-radius:var(--radius-lg);font-size:var(--font-size-xs)">
           <div style="font-weight:600;margin-bottom:8px">Tài khoản Demo (MK: 1):</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div>• <strong style="color:var(--text-primary)">giamdoc2</strong> (Mới)</div>
             <div>• <strong style="color:var(--text-primary)">giamdoc</strong></div>
             <div>• <strong style="color:var(--text-primary)">ketoan</strong></div>
             <div>• <strong style="color:var(--text-primary)">quanly</strong></div>
@@ -155,9 +155,13 @@ function renderMainApp() {
 
 // Initialize
 async function init() {
-  app.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:var(--bg-primary);">
-     <span class="spinner" style="width:40px;height:40px;border-width:4px"></span>
-     <p style="margin-top:16px;color:var(--text-muted);font-size:14px">Đang kết nối Dữ liệu Mạng Nội Bộ (Supabase)...</p>
+  app.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100vh;background:var(--bg-primary);position:fixed;top:0;left:0;z-index:9999;">
+     <img src="/logo.png" alt="Landlight Art" style="width:90px;height:90px;border-radius:16px;object-fit:cover;margin-bottom:16px;box-shadow:0 0 30px rgba(0,100,255,0.4)" />
+     <h1 style="background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:24px;font-weight:800;margin-bottom:8px">Landlight Art</h1>
+     <div style="display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:14px;margin-top:12px">
+        <span class="spinner spinner-sm"></span>
+        <span>Đang đồng bộ dữ liệu Cloud...</span>
+     </div>
   </div>`;
 
   await store.initStore();

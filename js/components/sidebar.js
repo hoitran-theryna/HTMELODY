@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   ]},
   { section: 'Kinh doanh & Sản xuất', items: [
     { id: 'orders', label: 'Đơn hàng', icon: 'shopping-cart' },
+    { id: 'customers', label: 'Khách hàng', icon: 'users' },
     { id: 'contracts', label: 'Soạn Hợp đồng (.doc)', icon: 'bookmark' },
     { id: 'production', label: 'Xưởng Sản xuất', icon: 'tool' },
     { id: 'events', label: 'Sự kiện Âm thanh Ánh sáng', icon: 'speaker' },
@@ -66,11 +67,9 @@ export function renderSidebar() {
   return `
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-logo" style="background:linear-gradient(135deg, #10b981, #06b6d4)">
-          ${ICONS['zap']}
-        </div>
+        <img src="/logo.png" alt="Landlight Art" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0" />
         <div class="sidebar-brand">
-          <h2>LED & EVENTS</h2>
+          <h2>Landlight Art</h2>
           <span>Quản lý Nội bộ</span>
         </div>
       </div>

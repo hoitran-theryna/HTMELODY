@@ -34,8 +34,8 @@ export default function renderProduction(container) {
 
     <div class="kanban-board" id="prod-kanban">
       ${STEPS.map(step => {
-        const stepTasks = productionTasks.filter(t => t.step === step.id);
-        return `
+    const stepTasks = productionTasks.filter(t => t.step === step.id);
+    return `
         <div class="kanban-column" data-step="${step.id}">
           <div class="kanban-column-header">
             <div class="kanban-column-title">
@@ -48,22 +48,34 @@ export default function renderProduction(container) {
             ${stepTasks.map(task => renderProdCard(task, orders)).join('')}
           </div>
         </div>`;
-      }).join('')}
+  }).join('')}
     </div>
   `;
 
   // Drag and drop Kanban logic
   if (perm === 'full' || perm === 'view') { // Nếu Staff thì có quyền kéo thả hoặc ít nhất quản lý
-     initKanbanDnd(container, STEPS);
+    initKanbanDnd(container, STEPS);
   }
 }
 
 function renderProdCard(task, orders) {
   const order = orders.find(o => o.id === task.orderId);
   const assignee = store.getEmployee(task.assignee);
-  
-  if (!order) return '';
-  
+
+  if (!order) {
+    return `<div class="kanban-card" data-id="${task.id}" draggable="true">
+      <div style="font-size:var(--font-size-xs);font-family:var(--font-mono);color:var(--text-muted);margin-bottom:4px">${task.orderId || task.id}</div>
+      <div class="kanban-card-title">${task.title || task.name || 'Công việc sản xuất'}</div>
+      ${task.notes ? `<div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px">${task.notes}</div>` : ''}
+      <div class="kanban-card-meta" style="margin-top:8px">
+        <span style="font-size:11px;color:var(--accent-amber)">⚠ Đơn hàng đã xóa</span>
+        <div class="avatar avatar-sm" style="background:${assignee?.avatar || '#3b82f6'};width:24px;height:24px;font-size:10px" title="${assignee?.name || ''}">
+          ${getInitials(assignee?.name || '?')}
+        </div>
+      </div>
+    </div>`;
+  }
+
   return `<div class="kanban-card" data-id="${task.id}" draggable="true">
     <div style="font-size:var(--font-size-xs);font-family:var(--font-mono);color:var(--text-muted);margin-bottom:4px">${order.id}</div>
     <div class="kanban-card-title">${order.title}</div>
@@ -109,21 +121,36 @@ function initKanbanDnd(container, STEPS) {
     if (body) body.style.background = '';
   });
 
-  board.addEventListener('drop', e => {
+  board.addEventListener('drop', async e => {
     e.preventDefault();
     const body = e.target.closest('.kanban-column-body');
     if (body && draggedCard) {
       const taskId = draggedCard.dataset.id;
       const newStep = body.dataset.step;
-      
-      // Update logic
-      store.update('production', taskId, { step: newStep });
-      
-      const stepName = STEPS.find(s => s.id === newStep)?.label;
-      showToast(`Đã chuyển sang khâu "${stepName}"`, 'success');
-      
-      // Re-render
-      setTimeout(() => document.querySelector('[data-route="production"]').click(), 100);
+
+      // 1. Optimistic UI: Di chuyển card ngay lập tức trong DOM
+      draggedCard.classList.remove('dragging');
+      body.appendChild(draggedCard);
+
+      // 2. Cập nhật dữ liệu lên Cloud
+      try {
+        const success = await store.update('production', taskId, { step: newStep });
+
+        if (success) {
+          const stepName = STEPS.find(s => s.id === newStep)?.label;
+          showToast(`Đã chuyển sang khâu "${stepName}"`, 'success');
+
+          // 3. Re-render toàn bộ board để cập nhật số lượng (counts) và thứ tự
+          renderProduction(container);
+        } else {
+          // Re-render để trả card về chỗ cũ nếu lỗi
+          renderProduction(container);
+        }
+      } catch (err) {
+        console.error("Lỗi khi kéo thả:", err);
+        showToast("Lỗi khi cập nhật trạng thái!", "error");
+        renderProduction(container);
+      }
     }
   });
 }

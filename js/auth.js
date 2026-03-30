@@ -10,22 +10,24 @@ const ROLES = {
   sales: { name: 'Kinh doanh', level: 3, icon: 'users' },
   accountant: { name: 'Kế toán', level: 4, icon: 'calculator' },
   staff: { name: 'Nhân viên Xưởng', level: 1, icon: 'user' },
+  event: { name: 'Event Director', level: 3, icon: 'speaker' },
 };
 
 const PERMISSIONS = {
-  dashboard:   { director: 'full', manager: 'production', sales: 'sales', accountant: 'finance', staff: 'personal' },
-  orders:      { director: 'full', manager: 'full', sales: 'full', accountant: 'view', staff: 'view' },
-  production:  { director: 'full', manager: 'full', sales: 'none', accountant: 'none', staff: 'view' },
-  events:      { director: 'full', manager: 'full', sales: 'view', accountant: 'none', staff: 'view' },
-  hr:          { director: 'full', manager: 'view', sales: 'none', accountant: 'none', staff: 'none' },
-  attendance:  { director: 'full', manager: 'department', sales: 'personal', accountant: 'personal', staff: 'personal' },
-  payroll:     { director: 'full', manager: 'none', sales: 'personal', accountant: 'full', staff: 'personal' },
-  debts:       { director: 'full', manager: 'view', sales: 'view', accountant: 'full', staff: 'none' },
-  fund:        { director: 'full', manager: 'none', sales: 'none', accountant: 'full', staff: 'none' },
-  tax:         { director: 'full', manager: 'none', sales: 'none', accountant: 'full', staff: 'none' },
-  assets:      { director: 'full', manager: 'full', sales: 'none', accountant: 'view', staff: 'view' },
-  reports:     { director: 'full', manager: 'production', sales: 'sales', accountant: 'finance', staff: 'none' },
-  contracts:   { director: 'full', manager: 'none', sales: 'none', accountant: 'full', staff: 'none' },
+  dashboard:   { director: 'full', manager: 'production', sales: 'sales', event: 'view', accountant: 'finance', staff: 'personal' },
+  orders:      { director: 'full', manager: 'full', sales: 'full', event: 'full', accountant: 'view', staff: 'view' },
+  production:  { director: 'full', manager: 'full', sales: 'view', event: 'view', accountant: 'none', staff: 'view' },
+  events:      { director: 'full', manager: 'full', sales: 'view', event: 'full', accountant: 'none', staff: 'view' },
+  hr:          { director: 'full', manager: 'view', sales: 'none', event: 'none', accountant: 'none', staff: 'none' },
+  attendance:  { director: 'full', manager: 'department', sales: 'personal', event: 'personal', accountant: 'personal', staff: 'personal' },
+  payroll:     { director: 'full', manager: 'none', sales: 'personal', event: 'personal', accountant: 'full', staff: 'personal' },
+  debts:       { director: 'full', manager: 'view', sales: 'view', event: 'view', accountant: 'full', staff: 'none' },
+  fund:        { director: 'full', manager: 'none', sales: 'none', event: 'none', accountant: 'full', staff: 'none' },
+  tax:         { director: 'full', manager: 'none', sales: 'none', event: 'none', accountant: 'full', staff: 'none' },
+  assets:      { director: 'full', manager: 'full', sales: 'none', event: 'view', accountant: 'view', staff: 'view' },
+  reports:     { director: 'full', manager: 'production', sales: 'sales', event: 'view', accountant: 'finance', staff: 'none' },
+  contracts:   { director: 'full', manager: 'full', sales: 'full', event: 'view', accountant: 'full', staff: 'none' },
+  customers:   { director: 'full', manager: 'full', sales: 'full', event: 'view', accountant: 'view', staff: 'none' },
 };
 
 class Auth {

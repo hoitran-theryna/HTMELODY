@@ -104,17 +104,34 @@ export default function renderDashboard(container) {
     setTimeout(() => {
       const cvs = document.getElementById('dash-revenue-chart');
       if (cvs) {
-        // Mock data cho 6 tháng (10-2025 tới 03-2026)
-        const labels = ['T10', 'T11', 'T12', 'T01', 'T02', 'T03'];
-        const neonRev = [120, 150, 180, 140, 110, 190]; // tr VND
-        const eventRev = [300, 250, 400, 280, 150, 500]; // tr VND
+        // Tính doanh thu 6 tháng gần nhất từ dữ liệu thực
+        const now = new Date();
+        const labels = [];
+        const months = [];
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          labels.push('T' + String(d.getMonth() + 1).padStart(2, '0'));
+          months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+        }
+        const neonRev = months.map(m =>
+          orders.filter(o => o.type === 'neon' && (o.createdAt || '').startsWith(m))
+                .reduce((s, o) => s + (o.price || 0), 0)
+        );
+        const eventRev = months.map(m =>
+          orders.filter(o => o.type === 'event' && (o.createdAt || '').startsWith(m))
+                .reduce((s, o) => s + (o.price || 0), 0)
+        );
+        // Nếu chưa có dữ liệu thực, dùng mock data (đơn vị VND)
+        const hasData = [...neonRev, ...eventRev].some(v => v > 0);
+        const finalNeon = hasData ? neonRev : [120,150,180,140,110,190].map(v => v * 1_000_000);
+        const finalEvent = hasData ? eventRev : [300,250,400,280,150,500].map(v => v * 1_000_000);
         drawBarChart(cvs, {
-           labels,
-           datasets: [
-             { values: eventRev, colors: ['#0d9488', '#10b981'] },
-             { values: neonRev, colors: ['#6d28d9', '#8b5cf6'] }
-           ]
-        }, { height: 280, maxVal: 500 });
+          labels,
+          datasets: [
+            { values: finalEvent, colors: ['#0d9488', '#10b981'] },
+            { values: finalNeon, colors: ['#6d28d9', '#8b5cf6'] }
+          ]
+        }, { height: 280 });
       }
     }, 100);
   }
@@ -122,28 +139,83 @@ export default function renderDashboard(container) {
   // === DÀNH CHO QUẢN LÝ SẢN XUẤT / KINH DOANH ===
   else if (perm === 'production' || perm === 'sales') {
      const orders = store.get('orders');
+     const debts = store.get('debts');
      const prod = store.get('production');
-     const events = store.get('events');
-     
+
+     const now = new Date();
+     const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+     const ordersThisMonth = orders.filter(o => (o.createdAt||'').startsWith(thisMonth));
+     const activeOrders = orders.filter(o => !['done','delivered','cancelled'].includes(o.status));
+     const myDebts = debts.filter(d => d.type === 'receivable' && d.status !== 'paid');
+     const totalPending = myDebts.reduce((s,d) => s + ((d.totalAmount||0)-(d.paidAmount||0)), 0);
+     const revenueThisMonth = ordersThisMonth.reduce((s,o) => s + (o.price||0), 0);
+
+     const customers = store.get('customers');
+     const recentOrders = orders.slice().sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)).slice(0,8);
+
      html += `
        <div class="stats-grid stagger-children">
          <div class="stat-card">
             <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-primary)">${ICONS['shopping-cart']}</div></div>
-            <div class="stat-card-value">${orders.filter(o=>o.status==='done').length}</div>
-            <div class="stat-card-label">Đơn/HĐ Hoàn thành</div>
+            <div class="stat-card-value">${activeOrders.length}</div>
+            <div class="stat-card-label">Đơn hàng Đang xử lý</div>
+         </div>
+         <div class="stat-card">
+            <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-success)">${ICONS['trending-up']}</div></div>
+            <div class="stat-card-value" style="font-size:20px">${formatCurrency(revenueThisMonth)}</div>
+            <div class="stat-card-label">Doanh thu Tháng này</div>
          </div>
          <div class="stat-card">
             <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-warning)">${ICONS.tool}</div></div>
             <div class="stat-card-value">${prod.length}</div>
-            <div class="stat-card-label">Khâu đang Uốn cáp/Lắp ráp</div>
+            <div class="stat-card-label">Task đang Sản xuất</div>
          </div>
          <div class="stat-card">
-            <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-info)">${ICONS.speaker}</div></div>
-            <div class="stat-card-value">${events.filter(e=>e.status==='preparing').length}</div>
-            <div class="stat-card-label">Sự kiện Sắp tới</div>
+            <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-danger)">${ICONS.bookmark}</div></div>
+            <div class="stat-card-value" style="font-size:20px;color:var(--accent-amber)">${formatCurrency(totalPending)}</div>
+            <div class="stat-card-label">Công nợ chưa Thu</div>
          </div>
        </div>
-       <div class="card" style="margin-top:24px"><div class="card-header"><h3>Hiệu năng Bộ phận</h3></div><div class="card-body" style="color:var(--text-muted);text-align:center;padding:40px">Bảng phân tích đang được cập nhật riêng cho Production/Sales. Vui lòng truy cập menu tiến độ.</div></div>
+       <div class="card" style="margin-top:24px">
+         <div class="card-header"><h3>Đơn hàng Gần đây</h3></div>
+         <div class="card-body" style="padding:0;overflow:hidden">
+           <table style="width:100%;border-collapse:collapse">
+             <thead>
+               <tr style="background:var(--bg-tertiary);border-bottom:1px solid var(--border-color)">
+                 <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Mã đơn</th>
+                 <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Tên đơn hàng</th>
+                 <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Khách hàng</th>
+                 <th style="padding:10px 16px;text-align:right;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Giá trị</th>
+                 <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Trạng thái</th>
+                 <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Deadline</th>
+               </tr>
+             </thead>
+             <tbody>
+               ${recentOrders.map((o, idx) => {
+                 const statusMap = { pending:'Chờ duyệt', approved:'Đã duyệt', producing:'Đang SX', done:'Hoàn thành', delivered:'Đã giao', cancelled:'Đã hủy' };
+                 const statusBg  = { pending:'rgba(245,158,11,.15)', approved:'rgba(59,130,246,.15)', producing:'rgba(139,92,246,.15)', done:'rgba(16,185,129,.15)', delivered:'rgba(100,116,139,.15)', cancelled:'rgba(239,68,68,.15)' };
+                 const statusClr = { pending:'var(--accent-amber)', approved:'var(--accent-blue-light)', producing:'#a78bfa', done:'var(--accent-emerald)', delivered:'var(--text-muted)', cancelled:'var(--accent-rose)' };
+                 const isOverdue = o.deadline && new Date(o.deadline) < now && !['done','delivered','cancelled'].includes(o.status);
+                 const typeTag = o.type === 'neon' ? '<span style="font-size:10px;background:rgba(139,92,246,.2);color:#a78bfa;padding:1px 6px;border-radius:4px;margin-left:6px">Neon</span>' : o.type === 'event' ? '<span style="font-size:10px;background:rgba(16,185,129,.2);color:var(--accent-emerald);padding:1px 6px;border-radius:4px;margin-left:6px">Event</span>' : '';
+                 return `<tr style="border-bottom:1px solid var(--border-color);${idx%2===1?'background:rgba(255,255,255,.01)':''}">
+                   <td style="padding:12px 16px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted)">${o.id}</td>
+                   <td style="padding:12px 16px;font-weight:500;color:var(--text-primary)">${o.title||''}${typeTag}</td>
+                   <td style="padding:12px 16px;color:var(--text-secondary);font-size:var(--font-size-sm)">${o.partnerName||customers.find(c=>c.id===o.customerId)?.name||'—'}</td>
+                   <td style="padding:12px 16px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">${formatFullCurrency(o.price||0)}</td>
+                   <td style="padding:12px 16px;text-align:center">
+                     <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:${statusBg[o.status]||'rgba(100,116,139,.15)'};color:${statusClr[o.status]||'var(--text-muted)'}">
+                       ${statusMap[o.status]||o.status}
+                     </span>
+                   </td>
+                   <td style="padding:12px 16px;font-size:var(--font-size-sm);color:${isOverdue?'var(--accent-rose)':'var(--text-secondary)'}">
+                     ${isOverdue?'⚠ ':''}${o.deadline||'—'}
+                   </td>
+                 </tr>`;
+               }).join('')}
+             </tbody>
+           </table>
+         </div>
+       </div>
      `;
   }
   
