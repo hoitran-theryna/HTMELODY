@@ -1,0 +1,132 @@
+/* ============================================
+   ERP SYSTEM - MODULE-SPECIFIC STYLES
+   ============================================ */
+
+/* === Data Table === */
+.data-table-wrapper { overflow-x:auto; }
+.data-table { width:100%; border-collapse:collapse; }
+.data-table thead th { padding:0.7rem 1rem; text-align:left; font-size:var(--font-size-xs); font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid var(--border-color); background:rgba(15,22,41,0.4); white-space:nowrap; cursor:pointer; user-select:none; }
+.data-table thead th:hover { color:var(--text-primary); }
+.data-table tbody tr { border-bottom:1px solid var(--border-color); transition:background var(--transition-fast); }
+.data-table tbody tr:hover { background:rgba(99,115,155,0.04); }
+.data-table tbody td { padding:0.7rem 1rem; font-size:var(--font-size-sm); color:var(--text-primary); vertical-align:middle; }
+.data-table .user-cell { display:flex; align-items:center; gap:var(--space-sm); }
+.data-table .actions-cell { display:flex; gap:4px; }
+.table-footer { display:flex; align-items:center; justify-content:space-between; padding:var(--space-md) var(--space-lg); border-top:1px solid var(--border-color); }
+.table-info { font-size:var(--font-size-xs); color:var(--text-muted); }
+.table-pagination { display:flex; align-items:center; gap:4px; }
+.page-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:1px solid var(--border-color); border-radius:var(--radius-sm); background:transparent; color:var(--text-secondary); cursor:pointer; font-size:var(--font-size-xs); transition:all var(--transition-fast); font-family:var(--font-family); }
+.page-btn:hover { border-color:var(--accent-blue); color:var(--accent-blue-light); }
+.page-btn.active { background:var(--accent-blue); border-color:var(--accent-blue); color:white; }
+
+/* === Modal === */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:var(--z-modal); display:flex; align-items:center; justify-content:center; animation:fade-in 0.2s ease-out; }
+.modal { width:90%; max-width:600px; max-height:85vh; background:var(--bg-secondary); border:1px solid var(--border-glass); border-radius:var(--radius-xl); box-shadow:var(--shadow-xl); display:flex; flex-direction:column; animation:modal-appear 0.3s ease-out; }
+.modal-lg { max-width:800px; }
+.modal-header { padding:var(--space-lg); border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.modal-header h2 { font-size:var(--font-size-lg); font-weight:600; }
+.modal-close { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:none; background:transparent; color:var(--text-muted); cursor:pointer; border-radius:var(--radius-sm); transition:all var(--transition-fast); }
+.modal-close:hover { color:var(--text-primary); background:rgba(99,115,155,0.1); }
+.modal-body { padding:var(--space-lg); overflow-y:auto; flex:1; }
+.modal-footer { padding:var(--space-md) var(--space-lg); border-top:1px solid var(--border-color); display:flex; justify-content:flex-end; gap:var(--space-sm); flex-shrink:0; }
+
+/* === Toast === */
+.toast-container { position:fixed; top:var(--space-xl); right:var(--space-xl); z-index:var(--z-toast); display:flex; flex-direction:column; gap:var(--space-sm); pointer-events:none; }
+.toast { padding:var(--space-md) var(--space-lg); border-radius:var(--radius-md); display:flex; align-items:center; gap:var(--space-sm); font-size:var(--font-size-sm); font-weight:500; pointer-events:auto; animation:toast-in 0.3s ease-out; backdrop-filter:blur(16px); border:1px solid var(--border-glass); min-width:280px; box-shadow:var(--shadow-lg); }
+.toast-success { background:rgba(16,185,129,0.15); color:var(--accent-emerald); border-color:rgba(16,185,129,0.2); }
+.toast-error { background:rgba(244,63,94,0.15); color:var(--accent-rose); border-color:rgba(244,63,94,0.2); }
+.toast-warning { background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:rgba(245,158,11,0.2); }
+.toast-info { background:rgba(59,130,246,0.15); color:var(--accent-blue-light); border-color:rgba(59,130,246,0.2); }
+.toast-close { margin-left:auto; cursor:pointer; opacity:0.7; background:none; border:none; color:inherit; font-size:var(--font-size-lg); }
+.toast.toast-exit { animation:toast-out 0.3s ease-in forwards; }
+
+/* === Kanban Board === */
+.kanban-board { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-md); min-height:400px; }
+.kanban-column { background:rgba(15,22,41,0.4); border:1px solid var(--border-glass); border-radius:var(--radius-lg); display:flex; flex-direction:column; min-height:300px; }
+.kanban-column-header { padding:var(--space-md); border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; }
+.kanban-column-title { font-size:var(--font-size-sm); font-weight:600; display:flex; align-items:center; gap:var(--space-xs); }
+.kanban-count { padding:0.1em 0.4em; font-size:var(--font-size-xs); background:rgba(99,115,155,0.15); border-radius:var(--radius-full); color:var(--text-muted); }
+.kanban-column-body { flex:1; padding:var(--space-sm); display:flex; flex-direction:column; gap:var(--space-sm); overflow-y:auto; min-height:100px; }
+.kanban-card { padding:var(--space-md); background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:var(--radius-md); cursor:grab; transition:all var(--transition-base); }
+.kanban-card:hover { border-color:var(--border-color-hover); transform:translateY(-1px); box-shadow:var(--shadow-md); }
+.kanban-card.dragging { opacity:0.5; transform:rotate(2deg); }
+.kanban-card-title { font-size:var(--font-size-sm); font-weight:500; color:var(--text-primary); margin-bottom:var(--space-xs); }
+.kanban-card-meta { display:flex; align-items:center; justify-content:space-between; margin-top:var(--space-sm); }
+.kanban-card-priority { font-size:var(--font-size-xs); font-weight:600; }
+.priority-high { color:var(--accent-rose); }
+.priority-medium { color:var(--accent-amber); }
+.priority-low { color:var(--accent-emerald); }
+.kanban-card-deadline { font-size:var(--font-size-xs); color:var(--text-muted); }
+
+/* === Pipeline / CRM Stages === */
+.pipeline { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:var(--space-md); }
+.pipeline-stage { background:rgba(15,22,41,0.4); border:1px solid var(--border-glass); border-radius:var(--radius-lg); }
+.pipeline-stage-header { padding:var(--space-md); border-bottom:1px solid var(--border-color); }
+.pipeline-stage-title { font-size:var(--font-size-sm); font-weight:600; }
+.pipeline-stage-value { font-size:var(--font-size-xs); color:var(--text-muted); margin-top:2px; }
+.pipeline-stage-body { padding:var(--space-sm); display:flex; flex-direction:column; gap:var(--space-xs); min-height:80px; }
+.pipeline-deal { padding:var(--space-sm); background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:var(--radius-sm); cursor:pointer; transition:all var(--transition-fast); }
+.pipeline-deal:hover { border-color:var(--border-color-hover); }
+.pipeline-deal-name { font-size:var(--font-size-sm); font-weight:500; }
+.pipeline-deal-amount { font-size:var(--font-size-xs); color:var(--accent-emerald); margin-top:2px; }
+
+/* === Calendar View === */
+.calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:var(--border-color); border-radius:var(--radius-md); overflow:hidden; }
+.calendar-header-cell { padding:var(--space-sm); text-align:center; font-size:var(--font-size-xs); font-weight:600; color:var(--text-muted); background:var(--bg-tertiary); text-transform:uppercase; }
+.calendar-cell { padding:var(--space-xs); min-height:80px; background:var(--bg-secondary); position:relative; cursor:pointer; transition:background var(--transition-fast); }
+.calendar-cell:hover { background:var(--bg-tertiary); }
+.calendar-cell.today { background:rgba(59,130,246,0.08); }
+.calendar-cell.other-month { opacity:0.3; }
+.calendar-date { font-size:var(--font-size-xs); font-weight:500; color:var(--text-secondary); margin-bottom:4px; }
+.calendar-cell.today .calendar-date { color:var(--accent-blue-light); font-weight:700; }
+.calendar-event { font-size:0.625rem; padding:1px 4px; border-radius:3px; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* === Activity Feed === */
+.activity-feed { display:flex; flex-direction:column; }
+.activity-item { display:flex; gap:var(--space-sm); padding:var(--space-sm) 0; position:relative; }
+.activity-item:not(:last-child)::after { content:''; position:absolute; left:15px; top:36px; bottom:0; width:1px; background:var(--border-color); }
+.activity-icon { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:var(--bg-tertiary); border:1px solid var(--border-color); z-index:1; }
+.activity-icon svg { width:14px; height:14px; }
+.activity-content { flex:1; }
+.activity-text { font-size:var(--font-size-sm); color:var(--text-primary); }
+.activity-text strong { font-weight:600; }
+.activity-time { font-size:var(--font-size-xs); color:var(--text-muted); margin-top:2px; }
+
+/* === Chart Container === */
+.chart-container { position:relative; width:100%; }
+.chart-container canvas { width:100% !important; height:auto !important; }
+
+/* === Attendance Check-in === */
+.checkin-widget { text-align:center; padding:var(--space-xl); }
+.checkin-time { font-size:var(--font-size-4xl); font-weight:700; color:var(--text-white); font-variant-numeric:tabular-nums; margin-bottom:var(--space-md); }
+.checkin-date { font-size:var(--font-size-sm); color:var(--text-muted); margin-bottom:var(--space-xl); }
+.checkin-btn { width:120px; height:120px; border-radius:50%; border:3px solid var(--accent-blue); background:rgba(59,130,246,0.1); color:var(--accent-blue-light); font-size:var(--font-size-md); font-weight:600; cursor:pointer; transition:all var(--transition-base); font-family:var(--font-family); display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+.checkin-btn:hover { background:rgba(59,130,246,0.2); box-shadow:0 0 30px rgba(59,130,246,0.2); transform:scale(1.05); }
+.checkin-btn.checked-in { border-color:var(--accent-emerald); background:rgba(16,185,129,0.1); color:var(--accent-emerald); }
+.checkin-btn svg { width:28px; height:28px; }
+.checkin-status { margin-top:var(--space-lg); display:flex; justify-content:center; gap:var(--space-xl); }
+.checkin-status-item { text-align:center; }
+.checkin-status-label { font-size:var(--font-size-xs); color:var(--text-muted); display:block; }
+.checkin-status-value { font-size:var(--font-size-md); font-weight:600; color:var(--text-primary); display:block; margin-top:2px; }
+
+/* === Payslip === */
+.payslip { border:1px solid var(--border-color); border-radius:var(--radius-lg); overflow:hidden; }
+.payslip-header { padding:var(--space-lg); background:var(--gradient-hero); border-bottom:1px solid var(--border-color); }
+.payslip-row { display:flex; justify-content:space-between; padding:0.6rem var(--space-lg); border-bottom:1px solid var(--border-color); font-size:var(--font-size-sm); }
+.payslip-row:last-child { border-bottom:none; }
+.payslip-row.total { font-weight:700; font-size:var(--font-size-md); background:rgba(59,130,246,0.05); color:var(--accent-blue-light); }
+.payslip-label { color:var(--text-secondary); }
+.payslip-value { color:var(--text-primary); font-weight:500; font-variant-numeric:tabular-nums; }
+
+/* === Approval Flow === */
+.approval-card { padding:var(--space-lg); border:1px solid var(--border-color); border-radius:var(--radius-md); margin-bottom:var(--space-md); transition:all var(--transition-base); background:var(--bg-tertiary); }
+.approval-card:hover { border-color:var(--border-color-hover); }
+.approval-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-sm); }
+.approval-card-title { font-size:var(--font-size-base); font-weight:600; }
+.approval-card-body { font-size:var(--font-size-sm); color:var(--text-secondary); margin-bottom:var(--space-md); }
+.approval-actions { display:flex; gap:var(--space-sm); }
+
+/* === Report Charts === */
+.report-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg); }
+@media(max-width:900px) { .report-grid { grid-template-columns:1fr; } .kanban-board { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:600px) { .kanban-board { grid-template-columns:1fr; } }
