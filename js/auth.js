@@ -24,9 +24,9 @@ const PERMISSIONS = {
   debts:       { director: 'full', manager: 'view', sales: 'view', event: 'view', accountant: 'full', staff: 'none' },
   fund:        { director: 'full', manager: 'none', sales: 'none', event: 'none', accountant: 'full', staff: 'none' },
   tax:         { director: 'full', manager: 'none', sales: 'none', event: 'none', accountant: 'full', staff: 'none' },
-  assets:      { director: 'full', manager: 'full', sales: 'none', event: 'view', accountant: 'view', staff: 'view' },
+  assets:      { director: 'full', manager: 'view', sales: 'none', event: 'view', accountant: 'view', staff: 'view' },
   reports:     { director: 'full', manager: 'production', sales: 'sales', event: 'view', accountant: 'finance', staff: 'none' },
-  contracts:   { director: 'full', manager: 'full', sales: 'full', event: 'view', accountant: 'full', staff: 'none' },
+  contracts:   { director: 'full', manager: 'view', sales: 'view', event: 'none', accountant: 'view', staff: 'none' },
   customers:   { director: 'full', manager: 'full', sales: 'full', event: 'view', accountant: 'view', staff: 'none' },
 };
 

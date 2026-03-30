@@ -9,6 +9,25 @@ import { formatFullCurrency, formatDate, getStatusBadge } from '../utils.js';
 import { showModal } from '../components/modal.js';
 
 export default function renderTax(container) {
+  container.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:24px;padding:40px">
+      <div style="width:80px;height:80px;border-radius:50%;background:var(--gradient-warning);display:flex;align-items:center;justify-content:center;font-size:36px">
+        🚧
+      </div>
+      <div>
+        <h2 style="margin:0 0 8px;font-size:var(--font-size-2xl)">Sắp ra mắt</h2>
+        <p style="color:var(--text-muted);margin:0;max-width:360px;line-height:1.6">
+          Module <strong>Thuế Nội bộ</strong> đang được phát triển.<br>
+          Tính năng quản lý Tờ khai VAT, TNCN, TNDN sẽ sớm được cập nhật.
+        </p>
+      </div>
+      <span class="badge badge-amber" style="font-size:13px;padding:8px 20px">Đang phát triển</span>
+    </div>
+  `;
+}
+
+// eslint-disable-next-line no-unused-vars
+function _renderTaxFull(container) {
   const taxes = store.get('taxes');
   const perm = auth.getPermission('tax');
 

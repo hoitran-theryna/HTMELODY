@@ -30,31 +30,35 @@ export default function renderDashboard(container) {
 
     const inProgressOrders = orders.filter(o => ['approved', 'producing'].includes(o.status)).length;
     
-    // Tính số dư Quỹ (Bank + Cash)
-    const totalIn = funds.filter(f => f.type === 'in').reduce((s,f) => s + f.amount, 0);
-    const totalOut = funds.filter(f => f.type === 'out').reduce((s,f) => s + f.amount, 0);
-    const currentBalance = totalIn - totalOut + 175000000; // 175m fake init
+    // Tính số dư Quỹ — đồng bộ chính xác với module Sổ Quỹ
+    const bankIn  = funds.filter(f => f.account === 'bank' && f.type === 'in').reduce((s,f) => s + (f.amount||0), 0);
+    const bankOut = funds.filter(f => f.account === 'bank' && f.type === 'out').reduce((s,f) => s + (f.amount||0), 0);
+    const cashIn  = funds.filter(f => f.account === 'cash' && f.type === 'in').reduce((s,f) => s + (f.amount||0), 0);
+    const cashOut = funds.filter(f => f.account === 'cash' && f.type === 'out').reduce((s,f) => s + (f.amount||0), 0);
+    const bankOpening = funds.filter(f => f.account === 'bank' && f.category === 'Số dư đầu kỳ').reduce((s,f) => s + (f.type==='in' ? f.amount : -f.amount), 0);
+    const cashOpening = funds.filter(f => f.account === 'cash' && f.category === 'Số dư đầu kỳ').reduce((s,f) => s + (f.type==='in' ? f.amount : -f.amount), 0);
+    const currentBalance = (bankOpening + bankIn - bankOut) + (cashOpening + cashIn - cashOut);
 
     // Công nợ Phải Thu
-    const totalReceivable = debts.filter(d => d.type === 'receivable').reduce((s,d) => s + (d.totalAmount - d.paidAmount), 0);
+    const totalReceivable = debts.filter(d => d.type === 'receivable').reduce((s,d) => s + ((d.totalAmount||0) + (d.shippingFee||0) - (d.paidAmount||0)), 0);
     // Phải Trả
-    const totalPayable = debts.filter(d => d.type === 'payable').reduce((s,d) => s + (d.totalAmount - d.paidAmount), 0);
+    const totalPayable = debts.filter(d => d.type === 'payable').reduce((s,d) => s + ((d.totalAmount||0) - (d.paidAmount||0)), 0);
 
     html += `
       <div class="stats-grid stagger-children">
         <div class="stat-card">
           <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-success)">${ICONS.wallet}</div></div>
-          <div class="stat-card-value" style="color:var(--accent-emerald)">${formatCurrency(currentBalance)}</div>
+          <div class="stat-card-value" style="color:var(--accent-emerald);font-size:20px">${formatFullCurrency(currentBalance)}</div>
           <div class="stat-card-label">TỔNG SỐ DƯ QUỸ</div>
         </div>
         <div class="stat-card">
           <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-info)">${ICONS['trending-up']}</div></div>
-          <div class="stat-card-value">${formatCurrency(totalReceivable)}</div>
+          <div class="stat-card-value" style="font-size:20px">${formatFullCurrency(totalReceivable)}</div>
           <div class="stat-card-label" style="color:var(--accent-blue-light);font-weight:600">PHI THU (Khách nợ)</div>
         </div>
         <div class="stat-card">
           <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-danger)">${ICONS['trending-down']}</div></div>
-          <div class="stat-card-value">${formatCurrency(totalPayable)}</div>
+          <div class="stat-card-value" style="font-size:20px">${formatFullCurrency(totalPayable)}</div>
           <div class="stat-card-label" style="color:var(--accent-rose);font-weight:600">PHẢI TRẢ (Nợ NCC)</div>
         </div>
         <div class="stat-card">
@@ -162,7 +166,7 @@ export default function renderDashboard(container) {
          </div>
          <div class="stat-card">
             <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-success)">${ICONS['trending-up']}</div></div>
-            <div class="stat-card-value" style="font-size:20px">${formatCurrency(revenueThisMonth)}</div>
+            <div class="stat-card-value" style="font-size:18px">${formatFullCurrency(revenueThisMonth)}</div>
             <div class="stat-card-label">Doanh thu Tháng này</div>
          </div>
          <div class="stat-card">
@@ -172,7 +176,7 @@ export default function renderDashboard(container) {
          </div>
          <div class="stat-card">
             <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-danger)">${ICONS.bookmark}</div></div>
-            <div class="stat-card-value" style="font-size:20px;color:var(--accent-amber)">${formatCurrency(totalPending)}</div>
+            <div class="stat-card-value" style="font-size:18px;color:var(--accent-amber)">${formatFullCurrency(totalPending)}</div>
             <div class="stat-card-label">Công nợ chưa Thu</div>
          </div>
        </div>

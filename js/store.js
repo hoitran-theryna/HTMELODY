@@ -21,6 +21,7 @@ class Store {
          assets: [],
          attendance: [],
          contracts: [],
+         payroll_records: [],
          currentUser: JSON.parse(localStorage.getItem('erp_user')) || null,
       };
       this.tables = {
@@ -35,7 +36,8 @@ class Store {
          assets: 'assets',
          attendance: 'attendance',
          taxes: 'taxes',
-         contracts: 'contracts'
+         contracts: 'contracts',
+         payroll_records: 'payroll_records'
       };
    }
 

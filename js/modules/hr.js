@@ -109,8 +109,8 @@ export default function renderHR(container) {
         ${perm === 'full' ? `
         <td style="text-align:center">
             <div style="display:flex;gap:8px;justify-content:center">
-               <button class="btn btn-icon btn-sm btn-ghost edit-emp" data-id="${e.id}" title="Sửa Hồ sơ" style="color:var(--accent-blue)">✏️</button>
-               <button class="btn btn-icon btn-sm btn-ghost del-emp" data-id="${e.id}" title="Xoá vĩnh viễn" style="color:var(--accent-rose)">🗑️</button>
+               <button class="btn btn-icon btn-sm btn-ghost edit-emp" data-id="${e.id}" title="Sửa Hồ sơ" style="color:var(--accent-blue)">${ICONS.edit}</button>
+               <button class="btn btn-icon btn-sm btn-ghost del-emp" data-id="${e.id}" title="Xoá vĩnh viễn" style="color:var(--accent-rose)">${ICONS.trash}</button>
             </div>
         </td>` : ''}
       </tr>

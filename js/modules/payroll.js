@@ -7,163 +7,262 @@ import auth from '../auth.js';
 import { formatFullCurrency, getInitials } from '../utils.js';
 import { ICONS } from '../components/icons.js';
 import { showModal } from '../components/modal.js';
+import { showToast } from '../components/toast.js';
 
 export default function renderPayroll(container) {
   const perm = auth.getPermission('payroll');
   const user = auth.getUser();
-  const employees = perm === 'full' ? store.get('employees').filter(e=>e.status==='active') : [user];
-  
-  const totalSalary = employees.reduce((s,e)=>s+e.salary,0);
 
-  container.innerHTML = `
-    <div class="page-header">
-      <div class="page-header-left"><h1>Bảng Lương Tháng 03/2026</h1><p>Lương Xưởng + PC Sự kiện + HH Kinh doanh</p></div>
-    </div>
-    
-    ${perm === 'full' ? `
-    <div class="stats-grid stagger-children" style="margin-bottom:24px">
-      <div class="stat-card">
-         <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-primary)">${ICONS.wallet}</div></div>
-         <div class="stat-card-value">${formatFullCurrency(totalSalary)}</div>
-         <div class="stat-card-label">Quỹ Lương Cơ Bản</div>
+  // ── Helpers ──
+  const toMonthStr = d => d?.slice(0, 7) || '';
+  const formatMonthLabel = m => {
+    const [y, mo] = m.split('-');
+    return `Tháng ${mo}/${y}`;
+  };
+
+  const getMonthOptions = () => {
+    const orders = store.get('orders');
+    const payrollRecs = store.get('payroll_records');
+    const months = new Set();
+    const now = new Date();
+    months.add(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`);
+    orders.forEach(o => { if (o.createdAt?.length >= 7) months.add(toMonthStr(o.createdAt)); });
+    payrollRecs.forEach(r => { if (r.month) months.add(r.month); });
+    return [...months].filter(Boolean).sort().reverse();
+  };
+
+  // ── Tính lương theo tháng ──
+  const calcRows = (month) => {
+    const allEmployees = perm === 'full'
+      ? store.get('employees').filter(e => e.status === 'active')
+      : [store.getById('employees', user.id) || user];
+
+    const monthOrders = store.get('orders').filter(o => toMonthStr(o.createdAt) === month);
+
+    return allEmployees.map(e => {
+      const base = e.salary || 0;
+      const empOrders = monthOrders.filter(o => o.salesId === e.id);
+      const salesVal  = empOrders.reduce((s, o) => s + (o.price||0), 0);
+      let commission  = 0;
+      if (e.commissionType === 'fixed') commission = e.commissionRate || 0;
+      else commission = Math.round(salesVal * ((e.commissionRate||0) / 100));
+      return {
+        employeeId: e.id, name: e.name, position: e.position,
+        avatar: e.avatar, base, commission, net: base + commission,
+        orderCount: empOrders.length
+      };
+    });
+  };
+
+  const monthOptions = getMonthOptions();
+  let selectedMonth = monthOptions[0] || new Date().toISOString().slice(0, 7);
+
+  // ── Render ──
+  const render = () => {
+    const payrollRecs = store.get('payroll_records');
+    const saved       = payrollRecs.find(r => r.month === selectedMonth);
+    const isFinalized = !!saved;
+    const rows        = isFinalized ? saved.records : calcRows(selectedMonth);
+    const label       = formatMonthLabel(selectedMonth);
+
+    const totalSalary    = rows.reduce((s,r) => s + (r.base||0), 0);
+    const totalAllowance = rows.reduce((s,r) => s + (r.commission||0), 0);
+    const totalNet       = rows.reduce((s,r) => s + (r.net||0), 0);
+
+    const canAdmin = user.role === 'director' || user.role === 'accountant';
+
+    container.innerHTML = `
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Bảng Lương ${label}</h1>
+          <p>Lương Xưởng + Phụ cấp Sự kiện + HH Kinh doanh &nbsp;•&nbsp;
+            ${isFinalized
+              ? `<span style="color:var(--accent-emerald);font-weight:600">Đã chốt ${new Date(saved.finalizedAt).toLocaleDateString('vi-VN')}</span>`
+              : `<span style="color:var(--accent-amber);font-weight:600">Chưa chốt — đang tính theo dữ liệu hiện tại</span>`}
+          </p>
+        </div>
+        <div class="page-header-right">
+          <select class="form-select" id="payroll-month-select" style="max-width:160px">
+            ${monthOptions.map(m => `<option value="${m}" ${m === selectedMonth ? 'selected' : ''}>${formatMonthLabel(m)}</option>`).join('')}
+          </select>
+          ${perm === 'full' && !isFinalized && canAdmin
+            ? `<button class="btn btn-success" id="btn-finalize-payroll">${ICONS['check-circle']} Chốt lương ${label}</button>`
+            : ''}
+        </div>
       </div>
-      <div class="stat-card">
-         <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-warning)">${ICONS.tool}</div></div>
-         <div class="stat-card-value">${formatFullCurrency(4500000)}</div>
-         <div class="stat-card-label">Phụ cấp Tăng ca / Sự kiện</div>
-      </div>
-    </div>` : ''}
 
-    <div class="card">
-      <div class="card-header"><h3>Chi tiết Phân bổ</h3></div>
-      <div class="data-table-wrapper">
-        <table class="data-table">
-          <thead><tr><th>Nhân viên</th><th>Lương Cơ Bản</th><th>Cộng / Phụ cấp</th><th>Trừ (BHXH/Thuế)</th><th>Thực Nhận</th><th>Thao tác</th></tr></thead>
-          <tbody>
-            ${employees.map(e => {
-                const base = e.salary;
-                let commission = 0;
-                
-                // 1. Tính toán hoa hồng trực tiếp từ danh sách Đơn hàng
-                const salesOrders = store.get('orders').filter(o => o.salesId === e.id);
-                const totalSalesVal = salesOrders.reduce((sum, o) => sum + (o.price || 0), 0);
+      ${perm === 'full' ? `
+      <div class="stats-grid stagger-children" style="margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-primary)">${ICONS.wallet}</div></div>
+          <div class="stat-card-value">${formatFullCurrency(totalSalary)}</div>
+          <div class="stat-card-label">Quỹ Lương Cơ Bản</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-warning)">${ICONS.tool}</div></div>
+          <div class="stat-card-value">${formatFullCurrency(totalAllowance)}</div>
+          <div class="stat-card-label">Phụ cấp / Hoa hồng tháng</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-success)">${ICONS.users}</div></div>
+          <div class="stat-card-value">${formatFullCurrency(totalNet)}</div>
+          <div class="stat-card-label">Tổng Chi Lương Thực tế</div>
+        </div>
+      </div>` : ''}
 
-                if (e.commissionType === 'fixed') {
-                   commission = e.commissionRate || 0;
-                } else {
-                   commission = Math.round(totalSalesVal * ((e.commissionRate || 0) / 100));
-                }
-                
-                // 2. Công thức mới: Thực nhận = Lương cứng + Hoa hồng (Không trừ BHXH)
-                const net = base + commission;
-                
-                return `
-                <tr>
-                  <td>
-                    <div class="user-cell">
-                       <div class="avatar avatar-sm" style="background:${e.avatar}">${getInitials(e.name)}</div>
-                       <div>
-                          <div style="font-weight:600">${e.name}</div>
-                          <div style="font-size:11px;color:var(--text-muted)">${e.position} (${salesOrders.length} đơn hàng)</div>
-                       </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Chi tiết Phân bổ — ${label}</h3>
+          ${isFinalized
+            ? `<span class="badge badge-emerald">Bản lưu vĩnh viễn</span>`
+            : `<span class="badge badge-amber">Dữ liệu tạm tính</span>`}
+        </div>
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nhân viên</th>
+                <th>Lương Cơ Bản</th>
+                <th>Cộng / Phụ cấp</th>
+                <th>Trừ (BHXH/Thuế)</th>
+                <th>Thực Nhận</th>
+                <th style="text-align:center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(r => `
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="avatar avatar-sm" style="background:${r.avatar}">${getInitials(r.name)}</div>
+                    <div>
+                      <div style="font-weight:600">${r.name}</div>
+                      <div style="font-size:11px;color:var(--text-muted)">${r.position} • ${r.orderCount} đơn tháng này</div>
                     </div>
-                  </td>
-                  <td style="font-variant-numeric:tabular-nums">${formatFullCurrency(base)}</td>
-                  <td style="font-variant-numeric:tabular-nums;color:var(--accent-emerald);font-weight:600">+${formatFullCurrency(commission)}</td>
-                  <td style="font-variant-numeric:tabular-nums;color:var(--text-muted)">0 đ</td>
-                  <td style="font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent-blue-light);font-size:16px">${formatFullCurrency(net)}</td>
-                  <td>
-                    <button class="btn btn-icon btn-sm" data-action="view-payslip" data-id="${e.id}" title="Xem chi tiết">${ICONS.eye}</button>
-                    ${(user.role === 'director' || user.role === 'accountant') ? `<button class="btn btn-icon btn-sm" data-action="edit-emp-salary" data-id="${e.id}" title="Sửa Lương/HH" style="margin-left:8px">✏️</button>` : ''}
-                  </td>
-                </tr>`;
-             }).join('')}
-          </tbody>
-        </table>
+                  </div>
+                </td>
+                <td style="font-variant-numeric:tabular-nums">${formatFullCurrency(r.base)}</td>
+                <td style="font-variant-numeric:tabular-nums;color:var(--accent-emerald);font-weight:600">+${formatFullCurrency(r.commission)}</td>
+                <td style="color:var(--text-muted)">0 đ</td>
+                <td style="font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent-blue-light);font-size:16px">${formatFullCurrency(r.net)}</td>
+                <td>
+                  <div class="actions-cell">
+                    <button class="btn btn-icon btn-sm" data-action="view-payslip" data-id="${r.employeeId}" title="Xem phiếu lương">${ICONS.eye}</button>
+                    ${!isFinalized && canAdmin && perm === 'full'
+                      ? `<button class="btn btn-icon btn-sm" data-action="edit-emp-salary" data-id="${r.employeeId}" title="Sửa Lương/HH">${ICONS.edit}</button>`
+                      : ''}
+                  </div>
+                </td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  `;
+    `;
 
-  // Xử lý sự kiện: Xem phiếu lương và Sửa nhanh (Dành cho Quản lý)
+    // Month selector
+    container.querySelector('#payroll-month-select').addEventListener('change', e => {
+      selectedMonth = e.target.value;
+      render();
+    });
+
+    // Chốt lương
+    container.querySelector('#btn-finalize-payroll')?.addEventListener('click', async () => {
+      const lbl = formatMonthLabel(selectedMonth);
+      if (!confirm(`Chốt lương ${lbl}?\n\nSau khi chốt, dữ liệu lương tháng này sẽ được lưu vĩnh viễn và không thể chỉnh sửa.`)) return;
+      const currentRows = calcRows(selectedMonth);
+      const result = await store.add('payroll_records', {
+        id: store.generateId('PR'),
+        month: selectedMonth,
+        records: currentRows,
+        totalNet: currentRows.reduce((s,r) => s + r.net, 0),
+        finalizedAt: new Date().toISOString()
+      });
+      if (result) {
+        showToast(`Đã chốt lương ${lbl} thành công!`, 'success');
+        render();
+      }
+    });
+  };
+
+  // ── Event delegation (một lần, không bị nhân bản khi render lại) ──
   container.addEventListener('click', async e => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
-    
-    const empId = btn.dataset.id;
+    const action = btn.dataset.action;
+    const empId  = btn.dataset.id;
+    if (!empId) return;
+
     const eData = store.getById('employees', empId);
     if (!eData) return;
 
-    // Logic tính toán lương tối giản chung
-    const base = eData.salary || 0;
-    const salesOrders = store.get('orders').filter(o => o.salesId === eData.id);
-    const totalSalesVal = salesOrders.reduce((sum, o) => sum + (o.price || 0), 0);
-    let commission = 0;
-    if (eData.commissionType === 'fixed') {
-        commission = eData.commissionRate || 0;
-    } else {
-        commission = Math.round(totalSalesVal * ((eData.commissionRate || 0) / 100));
-    }
-    const net = base + commission;
+    if (action === 'view-payslip') {
+      // Lấy data từ bản chốt nếu có, nếu không tính tạm
+      const saved = store.get('payroll_records').find(r => r.month === selectedMonth);
+      const rowData = saved
+        ? saved.records.find(r => r.employeeId === empId)
+        : calcRows(selectedMonth).find(r => r.employeeId === empId);
+      if (!rowData) return;
+      const label = formatMonthLabel(selectedMonth);
 
-    // 1. Hành động XEM PHIẾU LƯƠNG
-    if (btn.dataset.action === 'view-payslip') {
       showModal(`Phiếu Lương: ${eData.name}`, `
         <div style="text-align:center;margin-bottom:20px">
-          <div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-bottom:4px">Kỳ thanh toán: Tháng 03/2026</div>
-          <div style="font-weight:700;font-size:28px;color:var(--accent-blue-light);letter-spacing:-0.5px">${formatFullCurrency(net)}</div>
-          <div class="badge badge-emerald" style="margin-top:8px">Mã Nhân Viên: ${eData.id}</div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-bottom:4px">Kỳ thanh toán: ${label}</div>
+          <div style="font-weight:700;font-size:28px;color:var(--accent-blue-light);letter-spacing:-0.5px">${formatFullCurrency(rowData.net)}</div>
+          <div class="badge badge-emerald" style="margin-top:8px">Mã NV: ${eData.id}</div>
         </div>
-
         <div style="background:var(--bg-tertiary);border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-color)">
           <div style="padding:14px 16px;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between">
             <span style="color:var(--text-muted)">1. Lương cơ bản tháng:</span>
-            <span style="font-weight:600">${formatFullCurrency(base)}</span>
+            <span style="font-weight:600">${formatFullCurrency(rowData.base)}</span>
           </div>
           <div style="padding:14px 16px;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;background:rgba(16,185,129,0.05)">
-            <span style="color:var(--text-muted)">2. Hoa hồng kinh doanh (${salesOrders.length} đơn):</span>
-            <span style="font-weight:600;color:var(--accent-emerald)">+${formatFullCurrency(commission)}</span>
+            <span style="color:var(--text-muted)">2. Phụ cấp / Hoa hồng (${rowData.orderCount} đơn):</span>
+            <span style="font-weight:600;color:var(--accent-emerald)">+${formatFullCurrency(rowData.commission)}</span>
           </div>
           <div style="padding:16px;display:flex;justify-content:space-between;background:var(--bg-secondary)">
             <span style="font-weight:800;font-size:15px">TỔNG THỰC NHẬN</span>
-            <span style="font-weight:800;font-size:18px;color:var(--accent-blue-light)">${formatFullCurrency(net)}</span>
+            <span style="font-weight:800;font-size:18px;color:var(--accent-blue-light)">${formatFullCurrency(rowData.net)}</span>
           </div>
         </div>
-        <p style="font-size:11px;color:var(--text-muted);margin-top:12px;text-align:center"><i>Lưu ý: Bảng lương đã lược bỏ các khoản khấu trừ theo yêu cầu của Giám đốc.</i></p>
-      `, { footer: '<button class="btn btn-primary" onclick="window.print()">In Phiếu Lương</button><button class="btn btn-secondary" onclick="document.querySelector(\'.modal-overlay\').remove()">Đóng</button>' });
+        <p style="font-size:11px;color:var(--text-muted);margin-top:12px;text-align:center">
+          ${saved ? 'Phiếu lương đã chốt vĩnh viễn.' : 'Chưa chốt — số liệu có thể thay đổi.'}
+        </p>
+      `, { footer: '<button class="btn btn-primary" onclick="window.print()">In Phiếu</button><button class="btn btn-secondary" onclick="document.querySelector(\'.modal-overlay\').remove()">Đóng</button>' });
     }
 
-    // 2. Hành động SỬA NHANH LƯƠNG/HOA HỒNG (Chỉ Admin)
-    if (btn.dataset.action === 'edit-emp-salary') {
-       const modal = showModal(`Điều chỉnh Thu nhập: ${eData.name}`, `
-          <div class="form-group">
-             <label class="form-label">Lương cơ bản (VNĐ/Tháng)</label>
-             <input type="number" id="edit-salary" class="form-input" value="${eData.salary}" style="font-weight:bold;color:var(--accent-emerald);font-size:18px">
+    if (action === 'edit-emp-salary') {
+      const modal = showModal(`Điều chỉnh Thu nhập: ${eData.name}`, `
+        <div class="form-group">
+          <label class="form-label">Lương cơ bản (VNĐ/Tháng)</label>
+          <input type="number" id="edit-salary" class="form-input" value="${eData.salary||0}" style="font-weight:bold;color:var(--accent-emerald);font-size:18px">
+        </div>
+        <div class="form-group" style="margin-top:20px">
+          <label class="form-label">Hoa hồng / Phụ cấp</label>
+          <div style="display:flex;gap:10px">
+            <input type="number" id="edit-comm" class="form-input" value="${eData.commissionRate||0}" style="font-weight:bold;color:var(--accent-amber);font-size:18px">
+            <select id="edit-comm-type" class="form-select" style="width:130px">
+              <option value="percent" ${eData.commissionType !== 'fixed' ? 'selected' : ''}>% doanh số</option>
+              <option value="fixed" ${eData.commissionType === 'fixed' ? 'selected' : ''}>VNĐ cố định</option>
+            </select>
           </div>
-          <div class="form-group" style="margin-top:20px">
-             <label class="form-label">Thiết lập Hoa hồng sản phẩm</label>
-             <div style="display:flex;gap:10px">
-                <input type="number" id="edit-comm" class="form-input" value="${eData.commissionRate}" style="font-weight:bold;color:var(--accent-amber);font-size:18px">
-                <select id="edit-comm-type" class="form-select" style="width:120px">
-                   <option value="percent" ${eData.commissionType!=='fixed'?'selected':''}>Phần trăm (%)</option>
-                   <option value="fixed" ${eData.commissionType==='fixed'?'selected':''}>Số tiền (VNĐ)</option>
-                </select>
-             </div>
-             <p style="font-size:11px;color:var(--text-muted);margin-top:8px">* Hoa hồng sẽ tự động tính dựa trên tổng giá trị các đơn hàng được gán cho nhân viên này.</p>
-          </div>
-       `, { footer: '<button class="btn btn-secondary" onclick="document.querySelector(\'.modal-overlay\').remove()">Hủy</button><button class="btn btn-primary" id="btn-save-payroll-edit">Lưu & Cập nhật Cloud</button>' });
+          <p style="font-size:11px;color:var(--text-muted);margin-top:8px">Áp dụng từ tháng tiếp theo (tháng hiện tại tính theo số cũ nếu đã chốt).</p>
+        </div>
+      `, { footer: '<button class="btn btn-secondary" onclick="document.querySelector(\'.modal-overlay\').remove()">Hủy</button><button class="btn btn-primary" id="btn-save-payroll-edit">Lưu & Cập nhật Cloud</button>' });
 
-       modal.overlay.querySelector('#btn-save-payroll-edit').addEventListener('click', async () => {
-          const salary = parseInt(document.getElementById('edit-salary').value) || 0;
-          const commissionRate = parseFloat(document.getElementById('edit-comm').value) || 0;
-          const commissionType = document.getElementById('edit-comm-type').value;
-
-          const success = await store.update('employees', eData.id, { salary, commissionRate, commissionType });
-          if (success) {
-             showToast(`Đã cập nhật mức thu nhập mới cho ${eData.name}`, 'success');
-             modal.close();
-             renderPayroll(container); // Refresh màn hình lương
-          }
-       });
+      modal.overlay.querySelector('#btn-save-payroll-edit').addEventListener('click', async () => {
+        const salary         = parseInt(modal.overlay.querySelector('#edit-salary').value) || 0;
+        const commissionRate = parseFloat(modal.overlay.querySelector('#edit-comm').value) || 0;
+        const commissionType = modal.overlay.querySelector('#edit-comm-type').value;
+        const success = await store.update('employees', eData.id, { salary, commissionRate, commissionType });
+        if (success) {
+          showToast(`Đã cập nhật lương cho ${eData.name}`, 'success');
+          modal.close();
+          render();
+        }
+      });
     }
-  });
+  }, { once: false });
+
+  render();
 }

@@ -364,7 +364,7 @@ function renderLEDTable(data, perm) {
             <td>${getStatusBadge(d.status)}</td>
             ${perm === 'full' ? `
             <td>
-               <button class="btn btn-sm btn-success" data-action="pay" data-id="${d.id}" title="Thu tiền">${ICONS.plus}</button>
+               <button class="btn btn-sm btn-success" data-action="pay" data-id="${d.id}" title="Thu tiền">${ICONS.wallet}</button>
                <button class="btn btn-sm btn-ghost" data-action="edit-debt" data-id="${d.id}" title="Sửa thông tin BH">${ICONS.edit}</button>
             </td>` : ''}
           </tr>`;
@@ -433,7 +433,7 @@ function renderDebtTable(data, type, perm) {
             ${perm === 'full' ? `
             <td>
               <div style="display:flex;gap:4px">
-                 ${d.status !== 'paid' ? `<button class="btn btn-sm ${type==='receivable'?'btn-success':'btn-danger'}" data-action="pay" data-id="${d.id}" title="Ghi nhận thanh toán">${type==='receivable' ? ICONS.plus : ICONS.dashboard}</button>` : '<span style="color:var(--text-muted);font-size:var(--font-size-xs)">Xong</span>'}
+                 ${d.status !== 'paid' ? `<button class="btn btn-sm ${type==='receivable'?'btn-success':'btn-danger'}" data-action="pay" data-id="${d.id}" title="Ghi nhận thanh toán">${ICONS.wallet}</button>` : '<span style="color:var(--text-muted);font-size:var(--font-size-xs)">Xong</span>'}
               </div>
             </td>
             ` : ''}

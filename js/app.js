@@ -123,25 +123,75 @@ function renderLoginPage() {
 
 function renderMainApp() {
   app.innerHTML = `
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
     ${renderSidebar()}
     <div class="main-wrapper">
       ${renderHeader()}
       <main class="main-content" id="main-content"></main>
     </div>
+    <nav class="bottom-tabbar" id="bottom-tabbar">
+      <div class="bottom-tabbar-inner">
+        <button class="bottom-tab" data-route="orders" id="btab-orders">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          Đơn hàng
+        </button>
+        <button class="bottom-tab" data-route="customers" id="btab-customers">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          Khách hàng
+        </button>
+        <button class="bottom-tab" data-route="fund" id="btab-fund">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Sổ Quỹ
+        </button>
+      </div>
+    </nav>
   `;
 
   router.setContainer(document.getElementById('main-content'));
   startClock();
   initHeaderEvents();
 
-  // Sidebar navigation
+  // ── Hamburger / Sidebar toggle ──
+  const sidebar  = document.getElementById('sidebar');
+  const overlay  = document.getElementById('sidebar-overlay');
+
+  const openSidebar  = () => { sidebar.classList.add('open'); overlay.classList.add('show'); };
+  const closeSidebar = () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); };
+
+  document.getElementById('btn-hamburger')?.addEventListener('click', openSidebar);
+  overlay.addEventListener('click', closeSidebar);
+
+  // ── Sidebar nav items ──
   document.querySelectorAll('.nav-item[data-route]').forEach(item => {
     item.addEventListener('click', () => {
       router.navigate(item.dataset.route);
+      closeSidebar(); // đóng sidebar sau khi chọn (mobile)
+      updateBottomTabs(item.dataset.route);
     });
   });
 
-  // Logout
+  // ── Bottom tab bar ──
+  document.querySelectorAll('.bottom-tab[data-route]').forEach(tab => {
+    tab.addEventListener('click', () => {
+      router.navigate(tab.dataset.route);
+      updateBottomTabs(tab.dataset.route);
+    });
+  });
+
+  function updateBottomTabs(activeRoute) {
+    document.querySelectorAll('.bottom-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.route === activeRoute);
+    });
+  }
+
+  // Sync bottom tabs with router
+  const origNavigate = router.navigate.bind(router);
+  router.navigate = (route) => {
+    origNavigate(route);
+    updateBottomTabs(route);
+  };
+
+  // ── Logout ──
   document.getElementById('sidebar-user-area')?.addEventListener('click', () => {
     if (confirm('Bạn có muốn đăng xuất?')) {
       auth.logout();

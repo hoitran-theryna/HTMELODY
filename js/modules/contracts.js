@@ -42,6 +42,52 @@ export default async function renderContracts(container) {
     return;
   }
 
+  // Chỉ Giám đốc mới được soạn hợp đồng — các role khác xem danh sách chỉ đọc
+  if (perm !== 'full') {
+    const contracts = store.get('contracts');
+    container.innerHTML = `
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Hợp Đồng</h1>
+          <p>Bạn chỉ có quyền xem danh sách hợp đồng. Liên hệ Giám đốc để soạn hợp đồng mới.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Danh sách Hợp đồng</h3></div>
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Số HĐ</th>
+                <th>Ngày soạn</th>
+                <th>Tên Công ty Bên A</th>
+                <th>Đại diện</th>
+                <th>Tổng giá trị</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${contracts.length === 0
+                ? `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">Chưa có hợp đồng nào.</td></tr>`
+                : contracts.map(c => {
+                    const subTotal = (c.items || []).reduce((s, i) => s + ((i.qty || 0) * (i.price || 0)), 0);
+                    const total = subTotal * (1 + (c.vat || 0) / 100);
+                    return `<tr>
+                      <td style="font-family:var(--font-mono);font-size:12px">${c.ctrNo || c.id}</td>
+                      <td>${c.ctrDate || '—'}</td>
+                      <td style="font-weight:500">${c.aName || '—'}</td>
+                      <td>${c.aRep || '—'}</td>
+                      <td style="font-weight:600;color:var(--accent-emerald)">${new Intl.NumberFormat('vi-VN').format(total)} đ</td>
+                    </tr>`;
+                  }).join('')
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
   // 1. LẤY DỮ LIỆU TỪ SUPABASE (Thông qua Store)
   const contracts = store.get('contracts');
   
@@ -111,13 +157,13 @@ export default async function renderContracts(container) {
               <p>Dữ liệu được lưu trữ 100% trên Supabase (Đã bật Auto-save)</p>
            </div>
            <div class="page-header-right">
-              <button class="btn btn-primary" id="btn-export-word" style="background:#2563eb;padding:12px 24px;font-weight:bold">
-                 ${ICONS.report} XUẤT HỢP ĐỒNG (FULL TEXT)
+              <button class="btn btn-primary" id="btn-export-word">
+                 ${ICONS.report} Xuất Hợp đồng
               </button>
            </div>
         </div>
 
-        <div class="content-grid" style="display:grid; grid-template-columns: 4fr 8fr; gap: 24px;">
+        <div class="contract-layout">
            <!-- THÔNG TIN KHÁCH HÀNG -->
            <div class="col-left">
               <div class="card" style="margin-bottom:24px">

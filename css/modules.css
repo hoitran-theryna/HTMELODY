@@ -126,7 +126,98 @@
 .approval-card-body { font-size:var(--font-size-sm); color:var(--text-secondary); margin-bottom:var(--space-md); }
 .approval-actions { display:flex; gap:var(--space-sm); }
 
+/* === Contract Layout === */
+.contract-layout {
+  display: grid;
+  grid-template-columns: 4fr 8fr;
+  gap: 24px;
+}
+.contract-layout .col-left,
+.contract-layout .col-right { min-width: 0; }
+
 /* === Report Charts === */
 .report-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg); }
 @media(max-width:900px) { .report-grid { grid-template-columns:1fr; } .kanban-board { grid-template-columns:repeat(2,1fr); } }
 @media(max-width:600px) { .kanban-board { grid-template-columns:1fr; } }
+
+/* ============================================
+   MOBILE RESPONSIVE - MODULES
+   ============================================ */
+@media (max-width: 768px) {
+
+  /* === Contract layout: stack dọc trên mobile === */
+  .contract-layout {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-sm) !important;
+  }
+
+  /* === Payroll & các table actions === */
+  .actions-cell { gap: 4px !important; }
+  /* btn-icon KHÔNG được override padding/min-height từ .btn mobile */
+  .btn.btn-icon {
+    width: 32px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    flex-shrink: 0;
+  }
+  .btn.btn-icon svg { width: 15px !important; height: 15px !important; }
+
+  /* === Modal: Bottom Sheet === */
+  .modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .modal, .modal.modal-lg {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 90vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
+    margin: 0 !important;
+  }
+  .modal-header { padding: var(--space-md); }
+  .modal-header h2 { font-size: var(--font-size-base); }
+  .modal-body { padding: var(--space-md); }
+  .modal-body > div[style*="grid-template-columns"] {
+    /* Collapse bất kỳ inline grid nào về 1 cột */
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--space-sm) !important;
+  }
+  .modal-footer {
+    padding: var(--space-sm) var(--space-md);
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+  .modal-footer .btn { flex: 1; justify-content: center; min-width: 100px; }
+  .form-group { margin-bottom: var(--space-sm); }
+  /* Form groups với grid-column:span 2 → reset trên mobile */
+  .form-group[style*="grid-column"] { grid-column: auto !important; }
+
+  /* === Toast: top-center trên mobile === */
+  .toast-container {
+    top: var(--space-sm) !important;
+    right: var(--space-sm) !important;
+    left: var(--space-sm) !important;
+    align-items: center;
+  }
+  .toast { min-width: unset; width: 100%; font-size: var(--font-size-xs); padding: var(--space-sm) var(--space-md); }
+
+  /* === Data table wrapper === */
+  .data-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* === Kanban: 1 col trên nhỏ === */
+  .kanban-board { grid-template-columns: 1fr !important; }
+
+  /* === Event cards grid === */
+  div[style*="grid-template-columns:repeat(auto-fill"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* === Page header right buttons (trừ btn-icon) === */
+  .page-header-right .btn:not(.btn-icon) {
+    font-size: 11px !important;
+    padding: 0.38rem 0.7rem !important;
+  }
+  .page-header-right .btn:not(.btn-icon) svg { width: 13px !important; height: 13px !important; }
+}
