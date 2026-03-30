@@ -203,7 +203,12 @@
   .btn-hamburger { display: flex; }
   .header-search { display: none; }
   .header-clock { display: none; }
-  .header { padding: 0 var(--space-sm); gap: var(--space-xs); height: 52px; }
+  .header {
+    padding: 0 var(--space-sm);
+    padding-top: env(safe-area-inset-top);
+    gap: var(--space-xs);
+    height: calc(52px + env(safe-area-inset-top));
+  }
   .header-breadcrumb { font-size: var(--font-size-xs); }
 
   /* === Bottom tab bar === */
