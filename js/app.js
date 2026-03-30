@@ -71,18 +71,6 @@ function renderLoginPage() {
             Đăng nhập
           </button>
         </div>
-        <div style="margin-top:24px;background:var(--bg-tertiary);padding:16px;border-radius:var(--radius-lg);font-size:var(--font-size-xs)">
-          <div style="font-weight:600;margin-bottom:8px">Tài khoản Demo (MK: 1):</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-            <div>• <strong style="color:var(--text-primary)">giamdoc2</strong> (Mới)</div>
-            <div>• <strong style="color:var(--text-primary)">giamdoc</strong></div>
-            <div>• <strong style="color:var(--text-primary)">ketoan</strong></div>
-            <div>• <strong style="color:var(--text-primary)">quanly</strong></div>
-            <div>• <strong style="color:var(--text-primary)">kinhdoanh</strong></div>
-            <div>• <strong style="color:var(--text-primary)">nhanvien</strong></div>
-            <div>• <strong style="color:var(--text-primary)">sukien1</strong></div>
-          </div>
-        </div>
         <p style="text-align:center;margin-top:var(--space-lg);font-size:var(--font-size-xs);color:var(--text-muted)">
           © 2026 LED & Events ERP v2.0
         </p>
