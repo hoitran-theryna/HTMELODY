@@ -181,12 +181,29 @@
     max-height: 90dvh;     /* dvh co lại khi bàn phím iPhone bật lên */
     border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
     margin: 0 !important;
+    overflow: hidden;       /* chặn nội dung tràn ra ngoài modal */
   }
   .modal-header { padding: var(--space-md); }
   .modal-header h2 { font-size: var(--font-size-base); }
-  .modal-body { padding: var(--space-md); overflow-y: auto; }
-  .modal-body > div[style*="grid-template-columns"] {
-    /* Collapse bất kỳ inline grid nào về 1 cột */
+  .modal-body { padding: var(--space-md); overflow-y: auto; overflow-x: hidden; }
+  /* Collapse TẤT CẢ inline grid bên trong modal-body (kể cả nested) về 1 cột */
+  .modal-body div[style*="grid-template-columns"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--space-sm) !important;
+  }
+  /* Prevent form items từ overflow khi là grid/flex child */
+  .modal-body .form-group { min-width: 0; }
+  .modal-body .form-input,
+  .modal-body .form-select,
+  .modal-body .form-textarea { width: 100%; min-width: 0; box-sizing: border-box; }
+  /* Form group margin bị inline style="margin:0" → restore khi collapse */
+  .modal-body div[style*="grid-template-columns"] > .form-group[style*="margin:0"],
+  .modal-body div[style*="grid-template-columns"] > .form-group[style*="margin: 0"] {
+    margin-bottom: var(--space-xs) !important;
+  }
+  /* form-grid class (HR module) */
+  .modal-body .form-grid {
     display: flex !important;
     flex-direction: column !important;
     gap: var(--space-sm) !important;
