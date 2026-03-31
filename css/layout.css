@@ -239,27 +239,75 @@
   .content-grid { gap: var(--space-sm); margin-bottom: var(--space-md); }
 
   /* === Cards === */
-  /* QUAN TRỌNG: overflow:visible để table bên trong scroll được */
   .card { overflow: visible; }
   .card-header { padding: var(--space-xs) var(--space-sm); flex-wrap: wrap; gap: var(--space-xs); }
   .card-header h3 { font-size: var(--font-size-sm); }
   .card-body { padding: var(--space-sm); }
 
-  /* === Tables: scroll ngang === */
+  /* === Tables: Card view on mobile === */
   .data-table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    /* Giới hạn tối đa bằng viewport trừ padding */
-    max-width: calc(100vw - var(--space-md));
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    overflow-x: visible !important;
+    max-width: 100% !important;
+    border-radius: 0;
   }
-  /* Thêm shadow để hint có thể scroll */
-  .data-table-wrapper::after {
-    content: '';
-    display: block;
+  /* Override inline min-width (debts: 1200px, hr: 800px...) */
+  .data-table { display: block; width: 100% !important; min-width: 0 !important; }
+  .data-table thead { display: none; }
+  .data-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: var(--space-sm);
   }
-  .data-table thead th { padding: 0.5rem 0.65rem; font-size: 10px; }
-  .data-table tbody td { padding: 0.5rem 0.65rem; font-size: var(--font-size-xs); }
+  .data-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 16px;
+    background: rgba(99,115,155,0.06);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    border: 1px solid var(--border-glass);
+  }
+  .data-table tbody td {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 0;
+    border: none;
+    font-size: var(--font-size-xs);
+    white-space: normal;
+    word-break: break-word;
+    overflow: visible;
+  }
+  .data-table tbody td::before {
+    content: attr(data-label);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+  /* Card header: ô đầu tiên full width (tên / tiêu đề) */
+  .data-table tbody td:first-child {
+    grid-column: span 2;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .data-table tbody td:first-child::before { display: none; }
+  /* Action buttons: full width ở cuối card */
+  .data-table tbody td:last-child:has(button, .btn-icon) {
+    grid-column: span 2;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    padding-top: 8px;
+    margin-top: 2px;
+    border-top: 1px solid var(--border-color);
+  }
+  .data-table tbody td:last-child:has(button, .btn-icon)::before { display: none; }
+  /* Empty state row: full width */
+  .data-table tbody td[colspan] { grid-column: span 2; }
 
   /* === Buttons: nhỏ hơn trên mobile (trừ btn-icon) === */
   .btn:not(.btn-icon) { padding: 0.45rem 0.9rem; font-size: var(--font-size-xs); }

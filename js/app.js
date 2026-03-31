@@ -189,6 +189,22 @@ function renderMainApp() {
 
   // Handle initial route
   router.handleRoute();
+
+  // ── Mobile table card-view: auto-label td từ th ──
+  const mobileTableify = (root) => {
+    (root || document).querySelectorAll('.data-table:not([data-mlabeled])').forEach(table => {
+      const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim());
+      if (!headers.length) return;
+      table.querySelectorAll('tbody tr').forEach(tr => {
+        [...tr.querySelectorAll('td')].forEach((td, i) => {
+          if (headers[i]) td.setAttribute('data-label', headers[i]);
+        });
+      });
+      table.setAttribute('data-mlabeled', '1');
+    });
+  };
+  const tableObserver = new MutationObserver(() => mobileTableify(document.querySelector('.main-wrapper')));
+  tableObserver.observe(document.querySelector('.main-wrapper'), { childList: true, subtree: true });
 }
 
 // Initialize
