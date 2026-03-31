@@ -308,6 +308,8 @@
   .data-table tbody td:last-child:has(button, .btn-icon)::before { display: none; }
   /* Empty state row: full width */
   .data-table tbody td[colspan] { grid-column: span 2; }
+  /* Badge trong card: cho phép wrap thay vì overflow */
+  .data-table tbody td .badge { white-space: normal; max-width: 100%; word-break: break-word; }
 
   /* === Buttons: nhỏ hơn trên mobile (trừ btn-icon) === */
   .btn:not(.btn-icon) { padding: 0.45rem 0.9rem; font-size: var(--font-size-xs); }

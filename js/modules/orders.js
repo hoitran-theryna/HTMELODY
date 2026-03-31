@@ -112,7 +112,7 @@ export default function renderOrders(container) {
         </td>
         <td style="max-width:250px">
           <div style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${o.title}">${o.title}</div>
-          <div style="font-size:var(--font-size-xs);color:var(--text-muted)">${isEvent ? (o.size || '') : (o.size + ' | ' + o.color)}</div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted)">${isEvent ? (o.size || '') : ([o.size, o.color].filter(Boolean).join(' | '))}</div>
         </td>
         <td>
           <span class="badge ${isEvent ? 'badge-amber' : 'badge-violet'}">

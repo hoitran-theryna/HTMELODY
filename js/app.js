@@ -192,15 +192,15 @@ function renderMainApp() {
 
   // ── Mobile table card-view: auto-label td từ th ──
   const mobileTableify = (root) => {
-    (root || document).querySelectorAll('.data-table:not([data-mlabeled])').forEach(table => {
+    (root || document).querySelectorAll('.data-table').forEach(table => {
       const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim());
       if (!headers.length) return;
       table.querySelectorAll('tbody tr').forEach(tr => {
         [...tr.querySelectorAll('td')].forEach((td, i) => {
-          if (headers[i]) td.setAttribute('data-label', headers[i]);
+          if (headers[i] && !td.hasAttribute('data-label'))
+            td.setAttribute('data-label', headers[i]);
         });
       });
-      table.setAttribute('data-mlabeled', '1');
     });
   };
   const tableObserver = new MutationObserver(() => mobileTableify(document.querySelector('.main-wrapper')));
