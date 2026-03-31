@@ -8,6 +8,7 @@ import { ICONS } from '../components/icons.js';
 import { formatFullCurrency, formatDate, getStatusBadge, getInitials } from '../utils.js';
 import { showModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
+import { paginate, paginationHTML, bindPagination } from '../components/pagination.js';
 
 export default function renderHR(container) {
   const perm = auth.getPermission('hr');
@@ -48,10 +49,12 @@ export default function renderHR(container) {
           <tbody id="hr-table-body"></tbody>
         </table>
       </div>
+      <div id="hr-pag"></div>
     </div>
   `;
 
   let currentDeptFilter = '';
+  let page = 1;
 
   const renderStats = (emps) => {
     document.getElementById('hr-stats-container').innerHTML = `
@@ -78,14 +81,17 @@ export default function renderHR(container) {
     `;
   };
 
-  const renderTable = () => {
+  const renderTable = (newPage = 1) => {
+    page = newPage;
     const employees = store.get('employees');
     let data = employees;
     if (currentDeptFilter) data = data.filter(e => e.department === currentDeptFilter);
-    
+
     renderStats(employees);
 
-    document.getElementById('hr-table-body').innerHTML = data.map(e => `
+    const { items, total, pages } = paginate(data, page);
+
+    document.getElementById('hr-table-body').innerHTML = items.map(e => `
       <tr>
         <td>
           <div class="user-cell">
@@ -115,6 +121,12 @@ export default function renderHR(container) {
         </td>` : ''}
       </tr>
     `).join('');
+
+    const pag = container.querySelector('#hr-pag');
+    if (pag) {
+      pag.innerHTML = paginationHTML(page, pages, total);
+      bindPagination(pag, p => renderTable(p));
+    }
   };
 
   const openModal = (empId = null) => {
@@ -202,7 +214,7 @@ export default function renderHR(container) {
 
   document.getElementById('hr-dept')?.addEventListener('change', e => {
      currentDeptFilter = e.target.value;
-     renderTable();
+     renderTable(1);
   });
 
   container.addEventListener('click', e => {

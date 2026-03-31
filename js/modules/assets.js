@@ -8,12 +8,15 @@ import { ICONS } from '../components/icons.js';
 import { formatFullCurrency } from '../utils.js';
 import { showModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
+import { paginate, paginationHTML, bindPagination } from '../components/pagination.js';
 
 export default function renderAssets(container) {
   const perm = auth.getPermission('assets');
 
   if (container._assetsUnsub) container._assetsUnsub();
   if (container._eventsUnsub) container._eventsUnsub();
+
+  let matPage = 1, eqPage = 1;
 
   const render = () => {
     const assets = store.get('assets');
@@ -84,33 +87,10 @@ export default function renderAssets(container) {
                 ${perm === 'full' ? '<th style="text-align:center">Thao tác</th>' : ''}
               </tr>
             </thead>
-            <tbody>
-              ${materials.length === 0
-                ? `<tr><td colspan="${perm==='full'?7:6}" style="text-align:center;padding:2rem;color:var(--text-muted)">Chưa có vật tư nào.</td></tr>`
-                : materials.map(a => {
-                    const deployed = deployedMap[a.id] || 0;
-                    const available = (a.quantity || 0) - deployed;
-                    return `<tr>
-                      <td style="font-weight:500">${a.name}</td>
-                      <td style="text-align:center">${a.quantity} ${a.unit}</td>
-                      <td style="text-align:center">
-                        <span style="color:${deployed>0?'var(--accent-amber)':'var(--text-muted)'};font-weight:${deployed>0?'600':'400'}">${deployed} ${a.unit}</span>
-                      </td>
-                      <td style="text-align:center">
-                        <span style="color:${available<=0?'var(--accent-rose)':available<=2?'var(--accent-amber)':'var(--accent-emerald)'};font-weight:600">${available} ${a.unit}</span>
-                      </td>
-                      <td style="font-variant-numeric:tabular-nums">${formatFullCurrency(a.price)}</td>
-                      <td style="font-variant-numeric:tabular-nums">${formatFullCurrency((a.quantity||0)*(a.price||0))}</td>
-                      ${perm === 'full' ? `<td style="text-align:center">
-                        <button class="btn-icon btn-edit-asset" data-id="${a.id}" title="Sửa" style="color:var(--accent-blue-light);background:none;border:none;cursor:pointer;padding:4px 8px">${ICONS.edit}</button>
-                        <button class="btn-icon btn-del-asset" data-id="${a.id}" title="Xóa" style="color:var(--accent-rose);background:none;border:none;cursor:pointer;padding:4px 8px">${ICONS.trash}</button>
-                      </td>` : ''}
-                    </tr>`;
-                  }).join('')
-              }
-            </tbody>
+            <tbody id="mat-tbody"></tbody>
           </table>
         </div>
+        <div id="mat-pag"></div>
       </div>
 
       <!-- THIẾT BỊ SỰ KIỆN -->
@@ -131,35 +111,55 @@ export default function renderAssets(container) {
                 ${perm === 'full' ? '<th style="text-align:center">Thao tác</th>' : ''}
               </tr>
             </thead>
-            <tbody>
-              ${equipment.length === 0
-                ? `<tr><td colspan="${perm==='full'?7:6}" style="text-align:center;padding:2rem;color:var(--text-muted)">Chưa có thiết bị nào.</td></tr>`
-                : equipment.map(a => {
-                    const deployed = deployedMap[a.id] || 0;
-                    const available = (a.quantity || 0) - deployed;
-                    return `<tr>
-                      <td style="font-weight:500">${a.name}</td>
-                      <td style="text-align:center">${a.quantity} ${a.unit}</td>
-                      <td style="text-align:center">
-                        <span style="color:${deployed>0?'var(--accent-amber)':'var(--text-muted)'};font-weight:${deployed>0?'600':'400'}">${deployed} ${a.unit}</span>
-                      </td>
-                      <td style="text-align:center">
-                        <span style="color:${available<=0?'var(--accent-rose)':available<=1?'var(--accent-amber)':'var(--accent-emerald)'};font-weight:600">${available} ${a.unit}</span>
-                      </td>
-                      <td style="font-variant-numeric:tabular-nums">${formatFullCurrency(a.price)}</td>
-                      <td style="font-variant-numeric:tabular-nums">${formatFullCurrency((a.quantity||0)*(a.price||0))}</td>
-                      ${perm === 'full' ? `<td style="text-align:center">
-                        <button class="btn-icon btn-edit-asset" data-id="${a.id}" title="Sửa" style="color:var(--accent-blue-light);background:none;border:none;cursor:pointer;padding:4px 8px">${ICONS.edit}</button>
-                        <button class="btn-icon btn-del-asset" data-id="${a.id}" title="Xóa" style="color:var(--accent-rose);background:none;border:none;cursor:pointer;padding:4px 8px">${ICONS.trash}</button>
-                      </td>` : ''}
-                    </tr>`;
-                  }).join('')
-              }
-            </tbody>
+            <tbody id="eq-tbody"></tbody>
           </table>
         </div>
+        <div id="eq-pag"></div>
       </div>
     `;
+
+    // ── Render row helper ──
+    const assetRow = (a) => {
+      const deployed = deployedMap[a.id] || 0;
+      const available = (a.quantity || 0) - deployed;
+      return `<tr>
+        <td style="font-weight:500">${a.name}</td>
+        <td style="text-align:center">${a.quantity} ${a.unit}</td>
+        <td style="text-align:center">
+          <span style="color:${deployed>0?'var(--accent-amber)':'var(--text-muted)'};font-weight:${deployed>0?'600':'400'}">${deployed} ${a.unit}</span>
+        </td>
+        <td style="text-align:center">
+          <span style="color:${available<=0?'var(--accent-rose)':available<=2?'var(--accent-amber)':'var(--accent-emerald)'};font-weight:600">${available} ${a.unit}</span>
+        </td>
+        <td style="font-variant-numeric:tabular-nums">${formatFullCurrency(a.price)}</td>
+        <td style="font-variant-numeric:tabular-nums">${formatFullCurrency((a.quantity||0)*(a.price||0))}</td>
+        ${perm === 'full' ? `<td style="text-align:center">
+          <button class="btn-icon btn-edit-asset" data-id="${a.id}" title="Sửa" style="color:var(--accent-blue-light);background:none;border:none;cursor:pointer;padding:4px 8px">${ICONS.edit}</button>
+          <button class="btn-icon btn-del-asset" data-id="${a.id}" title="Xóa" style="color:var(--accent-rose);background:none;border:none;cursor:pointer;padding:4px 8px">${ICONS.trash}</button>
+        </td>` : ''}
+      </tr>`;
+    };
+
+    // ── Paginate & render each table ──
+    const fillAssetTable = (tbodyId, pagId, data, getPage, setPage, emptyMsg) => {
+      const tbody = container.querySelector('#' + tbodyId);
+      const pagEl = container.querySelector('#' + pagId);
+      if (!tbody) return;
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${perm==='full'?7:6}" style="text-align:center;padding:2rem;color:var(--text-muted)">${emptyMsg}</td></tr>`;
+        if (pagEl) pagEl.innerHTML = '';
+        return;
+      }
+      const { items, total, pages } = paginate(data, getPage());
+      tbody.innerHTML = items.map(assetRow).join('');
+      if (pagEl) {
+        pagEl.innerHTML = paginationHTML(getPage(), pages, total);
+        bindPagination(pagEl, p => { setPage(p); fillAssetTable(tbodyId, pagId, data, getPage, setPage, emptyMsg); });
+      }
+    };
+
+    fillAssetTable('mat-tbody', 'mat-pag', materials, () => matPage, p => { matPage = p; }, 'Chưa có vật tư nào.');
+    fillAssetTable('eq-tbody',  'eq-pag',  equipment, () => eqPage,  p => { eqPage = p; },  'Chưa có thiết bị nào.');
 
     // ── Nút thêm mới ──
     container.querySelector('#btn-add-asset')?.addEventListener('click', () => openAssetModal(null, render));

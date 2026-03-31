@@ -8,6 +8,7 @@ import { formatFullCurrency, getInitials } from '../utils.js';
 import { ICONS } from '../components/icons.js';
 import { showModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
+import { paginate, paginationHTML, bindPagination } from '../components/pagination.js';
 
 export default function renderPayroll(container) {
   const perm = auth.getPermission('payroll');
@@ -56,9 +57,11 @@ export default function renderPayroll(container) {
 
   const monthOptions = getMonthOptions();
   let selectedMonth = monthOptions[0] || new Date().toISOString().slice(0, 7);
+  let payrollPage = 1;
 
   // ── Render ──
-  const render = () => {
+  const render = (newPage = payrollPage) => {
+    payrollPage = newPage;
     const payrollRecs = store.get('payroll_records');
     const saved       = payrollRecs.find(r => r.month === selectedMonth);
     const isFinalized = !!saved;
@@ -68,6 +71,8 @@ export default function renderPayroll(container) {
     const totalSalary    = rows.reduce((s,r) => s + (r.base||0), 0);
     const totalAllowance = rows.reduce((s,r) => s + (r.commission||0), 0);
     const totalNet       = rows.reduce((s,r) => s + (r.net||0), 0);
+
+    const { items: pageRows, total, pages } = paginate(rows, payrollPage);
 
     const canAdmin = user.role === 'director' || user.role === 'accountant';
 
@@ -130,7 +135,7 @@ export default function renderPayroll(container) {
               </tr>
             </thead>
             <tbody>
-              ${rows.map(r => `
+              ${pageRows.map(r => `
               <tr>
                 <td>
                   <div class="user-cell">
@@ -157,13 +162,20 @@ export default function renderPayroll(container) {
             </tbody>
           </table>
         </div>
+        <div id="payroll-pag"></div>
       </div>
     `;
+
+    const pag = container.querySelector('#payroll-pag');
+    if (pag) {
+      pag.innerHTML = paginationHTML(payrollPage, pages, total);
+      bindPagination(pag, p => render(p));
+    }
 
     // Month selector
     container.querySelector('#payroll-month-select').addEventListener('change', e => {
       selectedMonth = e.target.value;
-      render();
+      render(1);
     });
 
     // Chốt lương

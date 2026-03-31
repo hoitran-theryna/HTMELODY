@@ -8,6 +8,7 @@ import { ICONS } from '../components/icons.js';
 import { showModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
 import { formatCurrency, formatFullCurrency, formatDate, getStatusBadge } from '../utils.js';
+import { paginate, paginationHTML, bindPagination } from '../components/pagination.js';
 
 export default function renderOrders(container) {
   const orders = store.get('orders');
@@ -89,10 +90,14 @@ export default function renderOrders(container) {
           <tbody id="orders-table-body"></tbody>
         </table>
       </div>
+      <div id="orders-pag"></div>
     </div>
   `;
 
-  function renderTable(typeFilter = '', statusFilter = '') {
+  let page = 1;
+
+  function renderTable(typeFilter = '', statusFilter = '', newPage = 1) {
+    page = newPage;
     let data = orders;
     if (typeFilter) data = data.filter(o => o.type === typeFilter);
     if (statusFilter) data = data.filter(o => o.status === statusFilter);
@@ -100,10 +105,19 @@ export default function renderOrders(container) {
     // Sắp xếp đơn mới trước
     data = data.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    document.getElementById('orders-table-body').innerHTML = data.map(o => {
+    if (data.length === 0) {
+      document.getElementById('orders-table-body').innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted)">Không tìm thấy đơn hàng nào phù hợp.</td></tr>`;
+      const pag = document.getElementById('orders-pag');
+      if (pag) pag.innerHTML = '';
+      return;
+    }
+
+    const { items, total, pages } = paginate(data, page);
+
+    document.getElementById('orders-table-body').innerHTML = items.map(o => {
       const cus = store.getById('customers', o.customerId);
       const isEvent = o.type === 'event';
-      
+
       return `<tr>
         <td style="font-weight:600;font-family:var(--font-mono);color:var(--text-secondary)">${o.id}</td>
         <td>
@@ -132,8 +146,11 @@ export default function renderOrders(container) {
         </td>
       </tr>`;
     }).join('');
-    if (data.length === 0) {
-      document.getElementById('orders-table-body').innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted)">Không tìm thấy đơn hàng nào phù hợp.</td></tr>`;
+
+    const pag = document.getElementById('orders-pag');
+    if (pag) {
+      pag.innerHTML = paginationHTML(page, pages, total);
+      bindPagination(pag, p => renderTable(typeFilter, statusFilter, p));
     }
   }
 
@@ -141,10 +158,10 @@ export default function renderOrders(container) {
 
   // Filters
   document.getElementById('order-type-filter')?.addEventListener('change', e => {
-    renderTable(e.target.value, document.getElementById('order-status-filter').value);
+    renderTable(e.target.value, document.getElementById('order-status-filter').value, 1);
   });
   document.getElementById('order-status-filter')?.addEventListener('change', e => {
-    renderTable(document.getElementById('order-type-filter').value, e.target.value);
+    renderTable(document.getElementById('order-type-filter').value, e.target.value, 1);
   });
 
   // Actions

@@ -8,9 +8,12 @@ import { ICONS } from '../components/icons.js';
 import { formatFullCurrency, formatDate, getStatusBadge, getInitials } from '../utils.js';
 import { showModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
+import { paginate, paginationHTML, bindPagination } from '../components/pagination.js';
 
 export default function renderCustomers(container) {
   const perm = auth.getPermission('customers');
+
+  let page = 1;
 
   const render = () => {
     const customers = store.get('customers');
@@ -80,13 +83,25 @@ export default function renderCustomers(container) {
                 <th>Thao tác</th>
               </tr>
             </thead>
-            <tbody id="customers-tbody">
-              ${renderRows(customers, orders, debts)}
-            </tbody>
+            <tbody id="customers-tbody"></tbody>
           </table>
         </div>
+        <div id="customers-pag"></div>
       </div>
     `;
+
+    function renderTablePage(data, newPage = 1) {
+      page = newPage;
+      const { items, total, pages } = paginate(data, page);
+      container.querySelector('#customers-tbody').innerHTML = renderRows(items, orders, debts);
+      const pag = container.querySelector('#customers-pag');
+      if (pag) {
+        pag.innerHTML = paginationHTML(page, pages, total);
+        bindPagination(pag, p => renderTablePage(data, p));
+      }
+    }
+
+    renderTablePage(customers);
 
     // Search
     container.querySelector('#cust-search')?.addEventListener('input', e => {
@@ -94,7 +109,7 @@ export default function renderCustomers(container) {
       const filtered = q
         ? customers.filter(c => (c.name || '').toLowerCase().includes(q) || (c.phone || c.contact || '').includes(q))
         : customers;
-      container.querySelector('#customers-tbody').innerHTML = renderRows(filtered, orders, debts);
+      renderTablePage(filtered, 1);
     });
 
     // Add customer

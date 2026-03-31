@@ -8,12 +8,15 @@ import { ICONS } from '../components/icons.js';
 import { formatFullCurrency, formatDate } from '../utils.js';
 import { showModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
+import { paginate, paginationHTML, bindPagination } from '../components/pagination.js';
 
 export default function renderFund(container) {
   const perm = auth.getPermission('fund');
 
   // Huỷ subscription cũ nếu có (tránh listener chồng chất khi re-render)
   if (container._fundUnsub) container._fundUnsub();
+
+  let page = 1;
 
   const render = () => {
     const funds = store.get('funds');
@@ -112,19 +115,65 @@ export default function renderFund(container) {
             <tbody id="fund-table-body"></tbody>
           </table>
         </div>
+        <div id="fund-pag"></div>
       </div>
     `;
+
+    const renderTable = (accFilter, typeFilter, newPage = 1) => {
+      page = newPage;
+      const tbody = document.getElementById('fund-table-body');
+      if (!tbody) return;
+
+      let data = [...store.get('funds')].sort((a, b) => new Date(b.date) - new Date(a.date));
+      if (accFilter) data = data.filter(f => f.account === accFilter);
+      if (typeFilter) data = data.filter(f => f.type === typeFilter);
+
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted)">Chưa có giao dịch nào.</td></tr>`;
+        const pag = container.querySelector('#fund-pag');
+        if (pag) pag.innerHTML = '';
+        return;
+      }
+
+      const { items, total, pages } = paginate(data, page);
+
+      tbody.innerHTML = items.map(f => {
+        const isBank = f.account === 'bank';
+        const isIn   = f.type === 'in';
+        const isOpening = f.category === 'Số dư đầu kỳ';
+        return `<tr style="${isOpening ? 'opacity:0.6;font-style:italic' : ''}">
+          <td>${formatDate(f.date)}</td>
+          <td style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted)">${f.id}</td>
+          <td><span class="badge ${isBank ? 'badge-blue' : 'badge-amber'}">${isBank ? 'Ngân hàng' : 'Tiền mặt'}</span></td>
+          <td><span style="font-size:12px;color:var(--text-secondary)">${f.category || '---'}</span></td>
+          <td style="font-weight:500;max-width:280px;font-size:13px">${f.description}</td>
+          <td style="font-variant-numeric:tabular-nums;color:var(--accent-emerald);font-weight:600">
+            ${isIn ? '+' + formatFullCurrency(f.amount) : ''}
+          </td>
+          <td style="font-variant-numeric:tabular-nums;color:var(--accent-rose)">
+            ${!isIn ? '−' + formatFullCurrency(f.amount) : ''}
+          </td>
+          <td style="font-size:11px;color:var(--accent-blue-light)">${f.refId || '---'}</td>
+        </tr>`;
+      }).join('');
+
+      const pag = container.querySelector('#fund-pag');
+      if (pag) {
+        pag.innerHTML = paginationHTML(page, pages, total);
+        bindPagination(pag, p => renderTable(accFilter, typeFilter, p));
+      }
+    };
 
     renderTable(currentFilter.acc, currentFilter.type);
 
     // Lưu filter state để giữ khi re-render
     container.querySelector('#fund-account-filter')?.addEventListener('change', e => {
       container._fundAccFilter = e.target.value;
-      renderTable(e.target.value, container._fundTypeFilter || '');
+      renderTable(e.target.value, container._fundTypeFilter || '', 1);
     });
     container.querySelector('#fund-type-filter')?.addEventListener('change', e => {
       container._fundTypeFilter = e.target.value;
-      renderTable(container._fundAccFilter || '', e.target.value);
+      renderTable(container._fundAccFilter || '', e.target.value, 1);
     });
 
     // Nút nhập số dư đầu kỳ
@@ -251,36 +300,3 @@ export default function renderFund(container) {
   render();
 }
 
-function renderTable(accFilter, typeFilter) {
-  const tbody = document.getElementById('fund-table-body');
-  if (!tbody) return;
-
-  let data = [...store.get('funds')].sort((a, b) => new Date(b.date) - new Date(a.date));
-  if (accFilter) data = data.filter(f => f.account === accFilter);
-  if (typeFilter) data = data.filter(f => f.type === typeFilter);
-
-  if (data.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted)">Chưa có giao dịch nào.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = data.map(f => {
-    const isBank = f.account === 'bank';
-    const isIn   = f.type === 'in';
-    const isOpening = f.category === 'Số dư đầu kỳ';
-    return `<tr style="${isOpening ? 'opacity:0.6;font-style:italic' : ''}">
-      <td>${formatDate(f.date)}</td>
-      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted)">${f.id}</td>
-      <td><span class="badge ${isBank ? 'badge-blue' : 'badge-amber'}">${isBank ? 'Ngân hàng' : 'Tiền mặt'}</span></td>
-      <td><span style="font-size:12px;color:var(--text-secondary)">${f.category || '---'}</span></td>
-      <td style="font-weight:500;max-width:280px;font-size:13px">${f.description}</td>
-      <td style="font-variant-numeric:tabular-nums;color:var(--accent-emerald);font-weight:600">
-        ${isIn ? '+' + formatFullCurrency(f.amount) : ''}
-      </td>
-      <td style="font-variant-numeric:tabular-nums;color:var(--accent-rose)">
-        ${!isIn ? '−' + formatFullCurrency(f.amount) : ''}
-      </td>
-      <td style="font-size:11px;color:var(--accent-blue-light)">${f.refId || '---'}</td>
-    </tr>`;
-  }).join('');
-}

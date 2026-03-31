@@ -8,11 +8,13 @@ import { ICONS } from '../components/icons.js';
 import { formatFullCurrency, formatDate, getStatusBadge, getInitials } from '../utils.js';
 import { showModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
+import { paginate, paginationHTML, bindPagination } from '../components/pagination.js';
 
 export default function renderDebts(container) {
   const perm = auth.getPermission('debts');
   let currentTab = 'led'; // 'led' or 'event'
-  
+  let ledPage = 1, eventPage = 1, payablePage = 1;
+
   const render = () => {
     const debts = store.get('debts');
     const ledDebts = debts.filter(d => d.branch !== 'event' && d.type === 'receivable');
@@ -70,9 +72,8 @@ export default function renderDebts(container) {
             </h3>
             <span class="badge badge-blue">${(currentTab === 'led' ? ledDebts : eventDebts).length} Khoản nợ</span>
           </div>
-          <div class="data-table-wrapper" style="overflow-x: auto">
-            ${currentTab === 'led' ? renderLEDTable(ledDebts, perm) : renderDebtTable(eventDebts, 'receivable', perm)}
-          </div>
+          <div class="data-table-wrapper" style="overflow-x: auto" id="debt-main-wrap"></div>
+          <div id="debt-main-pag"></div>
         </div>
 
         <!-- Khoản Phải Trả (Nhà cung cấp) -->
@@ -80,16 +81,46 @@ export default function renderDebts(container) {
           <div class="card-header">
             <h3 style="color:var(--accent-rose)">Công nợ Phải Trả (Cho Nhà cung cấp Vật tư)</h3>
           </div>
-          <div class="data-table-wrapper">
-            ${renderDebtTable(payables, 'payable', perm)}
-          </div>
+          <div class="data-table-wrapper" id="debt-pay-wrap"></div>
+          <div id="debt-pay-pag"></div>
         </div>
       </div>
     `;
 
+    // Populate paginated table wrappers
+    const fillDebtTable = (wrapperId, pagId, data, renderFn, getPage, setPage) => {
+      const wrap = container.querySelector('#' + wrapperId);
+      const pagEl = container.querySelector('#' + pagId);
+      if (!wrap) return;
+      const { items, total, pages, page } = paginate(data, getPage());
+      wrap.innerHTML = renderFn(items, perm);
+      if (pagEl) {
+        pagEl.innerHTML = paginationHTML(page, pages, total);
+        bindPagination(pagEl, p => { setPage(p); fillDebtTable(wrapperId, pagId, data, renderFn, getPage, setPage); });
+      }
+    };
+
+    fillDebtTable(
+      'debt-main-wrap', 'debt-main-pag',
+      currentTab === 'led' ? ledDebts : eventDebts,
+      currentTab === 'led'
+        ? (items, p) => renderLEDTable(items, p)
+        : (items, p) => renderDebtTable(items, 'receivable', p),
+      () => currentTab === 'led' ? ledPage : eventPage,
+      p => { if (currentTab === 'led') ledPage = p; else eventPage = p; }
+    );
+
+    fillDebtTable(
+      'debt-pay-wrap', 'debt-pay-pag',
+      payables,
+      (items, p) => renderDebtTable(items, 'payable', p),
+      () => payablePage,
+      p => { payablePage = p; }
+    );
+
     // Re-attach listeners for elements inside the template
-    container.querySelector('#tab-led').onclick = () => { currentTab = 'led'; render(); };
-    container.querySelector('#tab-event').onclick = () => { currentTab = 'event'; render(); };
+    container.querySelector('#tab-led').onclick = () => { currentTab = 'led'; ledPage = 1; render(); };
+    container.querySelector('#tab-event').onclick = () => { currentTab = 'event'; eventPage = 1; render(); };
     
     container.querySelector('#btn-add-debt')?.addEventListener('click', () => {
       const today = new Date().toISOString().split('T')[0];

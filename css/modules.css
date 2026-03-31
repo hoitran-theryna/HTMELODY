@@ -14,10 +14,16 @@
 .data-table .actions-cell { display:flex; gap:4px; }
 .table-footer { display:flex; align-items:center; justify-content:space-between; padding:var(--space-md) var(--space-lg); border-top:1px solid var(--border-color); }
 .table-info { font-size:var(--font-size-xs); color:var(--text-muted); }
-.table-pagination { display:flex; align-items:center; gap:4px; }
-.page-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:1px solid var(--border-color); border-radius:var(--radius-sm); background:transparent; color:var(--text-secondary); cursor:pointer; font-size:var(--font-size-xs); transition:all var(--transition-fast); font-family:var(--font-family); }
-.page-btn:hover { border-color:var(--accent-blue); color:var(--accent-blue-light); }
-.page-btn.active { background:var(--accent-blue); border-color:var(--accent-blue); color:white; }
+
+/* === Pagination Bar === */
+.pagination-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:var(--space-sm) var(--space-md); border-top:1px solid var(--border-color); }
+.pagination-info { font-size:var(--font-size-xs); color:var(--text-muted); }
+.pagination-controls { display:flex; align-items:center; gap:3px; }
+.btn-page { min-width:30px; height:30px; padding:0 6px; border:1px solid var(--border-color); border-radius:var(--radius-sm); background:transparent; color:var(--text-secondary); font-size:var(--font-size-xs); font-weight:500; font-family:var(--font-family); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all var(--transition-fast); }
+.btn-page:hover:not([disabled]) { background:rgba(59,130,246,0.1); color:var(--accent-blue-light); border-color:var(--accent-blue); }
+.btn-page.active { background:var(--accent-blue); color:#fff; border-color:var(--accent-blue); font-weight:700; }
+.btn-page[disabled] { opacity:0.3; cursor:not-allowed; }
+.page-ellipsis { padding:0 4px; color:var(--text-muted); font-size:var(--font-size-xs); line-height:30px; }
 
 /* === Modal === */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:var(--z-modal); display:flex; align-items:center; justify-content:center; animation:fade-in 0.2s ease-out; }
