@@ -533,13 +533,21 @@ a:hover {
     min-width: 0;
     box-sizing: border-box;
   }
-  /* input[type="date"] đặc biệt: browser có min-width nội tại → ép về 100% */
+  /* input[type="date"] đặc biệt: iOS Safari render rất cao → compact lại */
   input[type="date"],
   input[type="time"],
   input[type="datetime-local"] {
     width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
+    /* Giảm padding + fix height để không bị phồng to trên iOS */
+    padding: 0.3rem 0.75rem !important;
+    height: 44px !important;
+    max-height: 44px !important;
+    line-height: 1 !important;
+    /* Align nhất quán với text/number inputs */
+    text-align: left !important;
+    -webkit-text-fill-color: var(--text-primary);
   }
   .form-group { margin-bottom: var(--space-sm); }
   .form-label { font-size: var(--font-size-xs); margin-bottom: 4px; }
