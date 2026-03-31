@@ -533,18 +533,23 @@ a:hover {
     min-width: 0;
     box-sizing: border-box;
   }
-  /* input[type="date"]: iOS Safari tự render "button style" rất cao (~70px)
-     -webkit-appearance:none tắt native styling → height do CSS kiểm soát hoàn toàn
-     date picker native (scroll wheel) vẫn mở bình thường khi tap */
+  /* input[type="date"]: iOS Safari native "button style" rất cao (~65-70px)
+     -webkit-appearance:none tắt native iOS widget → height do CSS quyết định
+     Sau khi tắt, date picker native (scroll wheel) VẪN mở bình thường khi tap */
   input[type="date"],
   input[type="time"],
   input[type="datetime-local"] {
-    -webkit-appearance: none;
-    appearance: none;
+    -webkit-appearance: none !important;
+    appearance: none !important;
     width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
-    /* Không override padding/border/bg → kế thừa từ .form-input */
+    font-size: 16px !important;
+    /* Padding nhỏ hơn → chiều cao ~40px thay vì 65-70px */
+    padding: 0.45rem 0.8rem !important;
+    line-height: 1.4 !important;
+    /* Kế thừa màu sắc từ .form-input */
+    color: inherit !important;
   }
   .form-group { margin-bottom: var(--space-sm); }
   .form-label { font-size: var(--font-size-xs); margin-bottom: 4px; }

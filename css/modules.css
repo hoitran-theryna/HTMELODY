@@ -194,7 +194,7 @@
     word-break: break-word;
   }
   /* Ngăn BẤT KỲ element nào bên trong modal-body vượt 100% width */
-  .modal-body * { max-width: 100%; }
+  .modal-body * { max-width: 100% !important; box-sizing: border-box; }
 
   /* Collapse TẤT CẢ inline grid bên trong modal-body (kể cả nested) về 1 cột */
   .modal-body div[style*="grid-template-columns"] {
