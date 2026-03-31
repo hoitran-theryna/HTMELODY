@@ -261,7 +261,8 @@
   }
   .data-table tbody tr {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* minmax(0,1fr) buộc 2 cột chia đều, tránh cột bị ép hẹp do nowrap content */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 10px 16px;
     background: rgba(99,115,155,0.06);
     border-radius: var(--radius-md);
@@ -274,10 +275,11 @@
     gap: 3px;
     padding: 0;
     border: none;
+    min-width: 0; /* cho phép flex/grid cell shrink */
     font-size: var(--font-size-xs);
     white-space: normal;
-    word-break: break-word;
-    overflow: visible;
+    overflow-wrap: break-word;
+    overflow: hidden;
   }
   .data-table tbody td::before {
     content: attr(data-label);
@@ -286,6 +288,17 @@
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.07em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Nội dung dài: truncate 1 dòng + "..." vì có nút xem chi tiết */
+  .data-table tbody td > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    min-width: 0;
   }
   /* Card header: ô đầu tiên full width (tên / tiêu đề) */
   .data-table tbody td:first-child {
