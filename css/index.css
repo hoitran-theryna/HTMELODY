@@ -528,6 +528,18 @@ a:hover {
   .form-input, .form-select, .form-textarea {
     font-size: 16px; /* tránh iOS zoom khi focus */
     padding: 0.55rem 0.8rem;
+    /* Đảm bảo input/select không tràn container dù có min-width nội tại */
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  /* input[type="date"] đặc biệt: browser có min-width nội tại → ép về 100% */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
   }
   .form-group { margin-bottom: var(--space-sm); }
   .form-label { font-size: var(--font-size-xs); margin-bottom: 4px; }

@@ -185,18 +185,46 @@
   }
   .modal-header { padding: var(--space-md); }
   .modal-header h2 { font-size: var(--font-size-base); }
-  .modal-body { padding: var(--space-md); overflow-y: auto; overflow-x: hidden; }
+  .modal-body {
+    padding: var(--space-md);
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Ngăn text/số dài tràn ra ngoài */
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  /* Ngăn BẤT KỲ element nào bên trong modal-body vượt 100% width */
+  .modal-body * { max-width: 100%; }
+
   /* Collapse TẤT CẢ inline grid bên trong modal-body (kể cả nested) về 1 cột */
   .modal-body div[style*="grid-template-columns"] {
     display: flex !important;
     flex-direction: column !important;
     gap: var(--space-sm) !important;
   }
+
+  /* Flex rows inline bên trong modal-body → wrap thay vì tràn */
+  .modal-body div[style*="display:flex"],
+  .modal-body div[style*="display: flex"] {
+    flex-wrap: wrap !important;
+  }
+
   /* Prevent form items từ overflow khi là grid/flex child */
-  .modal-body .form-group { min-width: 0; }
+  .modal-body .form-group { min-width: 0; width: 100%; }
   .modal-body .form-input,
   .modal-body .form-select,
-  .modal-body .form-textarea { width: 100%; min-width: 0; box-sizing: border-box; }
+  .modal-body .form-textarea {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  /* Select bị set width cứng (vd: HR commission) → cho phép shrink */
+  .modal-body .form-select[style*="width"] {
+    width: auto !important;
+    flex: 1 1 auto;
+    min-width: 80px;
+  }
+
   /* Form group margin bị inline style="margin:0" → restore khi collapse */
   .modal-body div[style*="grid-template-columns"] > .form-group[style*="margin:0"],
   .modal-body div[style*="grid-template-columns"] > .form-group[style*="margin: 0"] {
@@ -208,6 +236,12 @@
     flex-direction: column !important;
     gap: var(--space-sm) !important;
   }
+  /* #led-special-fields có padding:16px → giảm trên mobile để tránh mất không gian */
+  #led-special-fields {
+    padding: var(--space-sm) !important;
+    margin-bottom: var(--space-sm) !important;
+  }
+
   .modal-footer {
     padding: var(--space-sm) var(--space-md);
     /* Đẩy buttons lên trên home indicator iPhone */
@@ -247,4 +281,42 @@
     padding: 0.38rem 0.7rem !important;
   }
   .page-header-right .btn:not(.btn-icon) svg { width: 13px !important; height: 13px !important; }
+}
+
+/* ============================================
+   PHONE NHỎ (≤ 400px): iPhone SE, Galaxy A cũ
+   ============================================ */
+@media (max-width: 400px) {
+  /* Modal body: giảm padding để tối đa không gian form */
+  .modal-body {
+    padding: var(--space-sm) !important; /* 12px thay vì 16px → tiết kiệm 8px/bên */
+  }
+  /* Header modal compact hơn */
+  .modal-header {
+    padding: var(--space-sm) !important;
+  }
+  .modal-header h2 { font-size: var(--font-size-sm) !important; }
+
+  /* Nút footer nhỏ hơn */
+  .modal-footer {
+    padding: var(--space-xs) var(--space-sm) !important;
+    padding-bottom: calc(var(--space-xs) + env(safe-area-inset-bottom)) !important;
+  }
+  .modal-footer .btn {
+    min-width: 80px !important;
+    font-size: var(--font-size-xs) !important;
+    padding: 0.38rem 0.6rem !important;
+  }
+
+  /* #led-special-fields giảm thêm trên phone cực nhỏ */
+  #led-special-fields {
+    padding: var(--space-xs) !important;
+    border-radius: var(--radius-sm) !important;
+  }
+
+  /* Stats grid → 2 cột nhỏ gọn */
+  .stats-grid {
+    gap: var(--space-xs) !important;
+  }
+  .stat-card { padding: var(--space-xs) !important; }
 }

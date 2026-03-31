@@ -343,3 +343,26 @@
   .page-header-left h1 { font-size: var(--font-size-md); }
   .main-content { padding: var(--space-xs); padding-bottom: calc(68px + env(safe-area-inset-bottom)); }
 }
+
+@media (max-width: 400px) {
+  /* Đảm bảo không có overflow ngang toàn trang trên phone cực nhỏ */
+  .main-content { padding: 6px; padding-bottom: calc(68px + env(safe-area-inset-bottom)); }
+
+  /* Stat card: value size nhỏ hơn để fit 2 cột trên 320px */
+  .stat-card-value { font-size: var(--font-size-xs) !important; }
+  .stat-card-label { font-size: 9px !important; }
+
+  /* Page header compact */
+  .page-header { margin-bottom: var(--space-xs) !important; }
+  .page-header-left h1 { font-size: var(--font-size-sm) !important; }
+
+  /* Filter bar inputs thu nhỏ hơn */
+  .filter-bar .form-input,
+  .filter-bar .form-select { min-width: 90px !important; font-size: 11px !important; }
+
+  /* Notification dropdown: full-width hơn */
+  .notification-dropdown {
+    width: calc(100vw - 16px) !important;
+    right: -8px !important;
+  }
+}
