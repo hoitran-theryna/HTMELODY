@@ -230,7 +230,7 @@
   /* === Stats grid === */
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-xs); margin-bottom: var(--space-md); }
   .stat-card { padding: var(--space-sm); }
-  .stat-card-value { font-size: var(--font-size-base) !important; }
+  .stat-card-value { font-size: var(--font-size-sm) !important; word-break: break-word; overflow-wrap: break-word; line-height: 1.3; }
   .stat-card-label { font-size: 10px; }
   .stat-card-icon { width: 32px; height: 32px; }
 

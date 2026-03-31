@@ -182,42 +182,48 @@ export default function renderDashboard(container) {
        </div>
        <div class="card" style="margin-top:24px">
          <div class="card-header"><h3>Đơn hàng Gần đây</h3></div>
-         <div class="card-body" style="padding:0;overflow:hidden">
-           <table style="width:100%;border-collapse:collapse">
-             <thead>
-               <tr style="background:var(--bg-tertiary);border-bottom:1px solid var(--border-color)">
-                 <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Mã đơn</th>
-                 <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Tên đơn hàng</th>
-                 <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Khách hàng</th>
-                 <th style="padding:10px 16px;text-align:right;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Giá trị</th>
-                 <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Trạng thái</th>
-                 <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Deadline</th>
-               </tr>
-             </thead>
-             <tbody>
-               ${recentOrders.map((o, idx) => {
-                 const statusMap = { pending:'Chờ duyệt', approved:'Đã duyệt', producing:'Đang SX', done:'Hoàn thành', delivered:'Đã giao', cancelled:'Đã hủy' };
-                 const statusBg  = { pending:'rgba(245,158,11,.15)', approved:'rgba(59,130,246,.15)', producing:'rgba(139,92,246,.15)', done:'rgba(16,185,129,.15)', delivered:'rgba(100,116,139,.15)', cancelled:'rgba(239,68,68,.15)' };
-                 const statusClr = { pending:'var(--accent-amber)', approved:'var(--accent-blue-light)', producing:'#a78bfa', done:'var(--accent-emerald)', delivered:'var(--text-muted)', cancelled:'var(--accent-rose)' };
-                 const isOverdue = o.deadline && new Date(o.deadline) < now && !['done','delivered','cancelled'].includes(o.status);
-                 const typeTag = o.type === 'neon' ? '<span style="font-size:10px;background:rgba(139,92,246,.2);color:#a78bfa;padding:1px 6px;border-radius:4px;margin-left:6px">Neon</span>' : o.type === 'event' ? '<span style="font-size:10px;background:rgba(16,185,129,.2);color:var(--accent-emerald);padding:1px 6px;border-radius:4px;margin-left:6px">Event</span>' : '';
-                 return `<tr style="border-bottom:1px solid var(--border-color);${idx%2===1?'background:rgba(255,255,255,.01)':''}">
-                   <td style="padding:12px 16px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted)">${o.id}</td>
-                   <td style="padding:12px 16px;font-weight:500;color:var(--text-primary)">${o.title||''}${typeTag}</td>
-                   <td style="padding:12px 16px;color:var(--text-secondary);font-size:var(--font-size-sm)">${o.partnerName||customers.find(c=>c.id===o.customerId)?.name||'—'}</td>
-                   <td style="padding:12px 16px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">${formatFullCurrency(o.price||0)}</td>
-                   <td style="padding:12px 16px;text-align:center">
-                     <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:${statusBg[o.status]||'rgba(100,116,139,.15)'};color:${statusClr[o.status]||'var(--text-muted)'}">
-                       ${statusMap[o.status]||o.status}
-                     </span>
-                   </td>
-                   <td style="padding:12px 16px;font-size:var(--font-size-sm);color:${isOverdue?'var(--accent-rose)':'var(--text-secondary)'}">
-                     ${isOverdue?'⚠ ':''}${o.deadline||'—'}
-                   </td>
-                 </tr>`;
-               }).join('')}
-             </tbody>
-           </table>
+         <div class="card-body" style="padding:0">
+           <div class="data-table-wrapper">
+             <table class="data-table">
+               <thead>
+                 <tr>
+                   <th>Tên đơn hàng</th>
+                   <th>Mã đơn</th>
+                   <th>Khách hàng</th>
+                   <th>Giá trị</th>
+                   <th>Trạng thái</th>
+                   <th>Deadline</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 ${recentOrders.map((o) => {
+                   const statusMap = { pending:'Chờ duyệt', approved:'Đã duyệt', producing:'Đang SX', done:'Hoàn thành', delivered:'Đã giao', cancelled:'Đã hủy' };
+                   const statusBg  = { pending:'rgba(245,158,11,.15)', approved:'rgba(59,130,246,.15)', producing:'rgba(139,92,246,.15)', done:'rgba(16,185,129,.15)', delivered:'rgba(100,116,139,.15)', cancelled:'rgba(239,68,68,.15)' };
+                   const statusClr = { pending:'var(--accent-amber)', approved:'var(--accent-blue-light)', producing:'#a78bfa', done:'var(--accent-emerald)', delivered:'var(--text-muted)', cancelled:'var(--accent-rose)' };
+                   const isOverdue = o.deadline && new Date(o.deadline) < now && !['done','delivered','cancelled'].includes(o.status);
+                   const typeTag = o.type === 'neon'
+                     ? '<span style="font-size:10px;background:rgba(139,92,246,.2);color:#a78bfa;padding:1px 6px;border-radius:4px;margin-left:6px">Neon</span>'
+                     : o.type === 'event'
+                     ? '<span style="font-size:10px;background:rgba(16,185,129,.2);color:var(--accent-emerald);padding:1px 6px;border-radius:4px;margin-left:6px">Event</span>'
+                     : '';
+                   return `<tr>
+                     <td style="font-weight:500">${o.title||'—'}${typeTag}</td>
+                     <td data-label="Mã đơn" style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted)">${o.id}</td>
+                     <td data-label="Khách hàng">${o.partnerName||customers.find(c=>c.id===o.customerId)?.name||'—'}</td>
+                     <td data-label="Giá trị" style="font-weight:600;font-variant-numeric:tabular-nums">${formatFullCurrency(o.price||0)}</td>
+                     <td data-label="Trạng thái">
+                       <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:${statusBg[o.status]||'rgba(100,116,139,.15)'};color:${statusClr[o.status]||'var(--text-muted)'}">
+                         ${statusMap[o.status]||o.status}
+                       </span>
+                     </td>
+                     <td data-label="Deadline" style="color:${isOverdue?'var(--accent-rose)':'var(--text-secondary)'}">
+                       ${isOverdue?'⚠ ':''}${o.deadline||'—'}
+                     </td>
+                   </tr>`;
+                 }).join('')}
+               </tbody>
+             </table>
+           </div>
          </div>
        </div>
      `;
