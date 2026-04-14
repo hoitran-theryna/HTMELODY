@@ -71,6 +71,8 @@
 .notification-item:hover { background:rgba(15,23,42,0.03); }
 .notification-item:last-child { border-bottom:none; }
 .notification-item-icon { width:32px; height:32px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.notification-item-icon svg { width:16px; height:16px; }
+.notification-item-content { flex:1; min-width:0; }
 .notification-item-text { font-size:var(--font-size-sm); color:var(--text-primary); line-height:1.4; }
 .notification-item-time { font-size:var(--font-size-xs); color:var(--text-muted); margin-top:2px; }
 
