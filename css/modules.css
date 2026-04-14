@@ -5,10 +5,10 @@
 /* === Data Table === */
 .data-table-wrapper { overflow-x:auto; }
 .data-table { width:100%; border-collapse:collapse; }
-.data-table thead th { padding:0.7rem 1rem; text-align:left; font-size:var(--font-size-xs); font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid var(--border-color); background:rgba(15,22,41,0.4); white-space:nowrap; cursor:pointer; user-select:none; }
+.data-table thead th { padding:0.7rem 1rem; text-align:left; font-size:var(--font-size-xs); font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid var(--border-color); background:#f8fafc; white-space:nowrap; cursor:pointer; user-select:none; }
 .data-table thead th:hover { color:var(--text-primary); }
 .data-table tbody tr { border-bottom:1px solid var(--border-color); transition:background var(--transition-fast); }
-.data-table tbody tr:hover { background:rgba(99,115,155,0.04); }
+.data-table tbody tr:hover { background:rgba(59,130,246,0.03); }
 .data-table tbody td { padding:0.7rem 1rem; font-size:var(--font-size-sm); color:var(--text-primary); vertical-align:middle; }
 .data-table .user-cell { display:flex; align-items:center; gap:var(--space-sm); }
 .data-table .actions-cell { display:flex; gap:4px; }
@@ -20,7 +20,7 @@
 .pagination-info { font-size:var(--font-size-xs); color:var(--text-muted); }
 .pagination-controls { display:flex; align-items:center; gap:3px; }
 .btn-page { min-width:30px; height:30px; padding:0 6px; border:1px solid var(--border-color); border-radius:var(--radius-sm); background:transparent; color:var(--text-secondary); font-size:var(--font-size-xs); font-weight:500; font-family:var(--font-family); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all var(--transition-fast); }
-.btn-page:hover:not([disabled]) { background:rgba(59,130,246,0.1); color:var(--accent-blue-light); border-color:var(--accent-blue); }
+.btn-page:hover:not([disabled]) { background:rgba(59,130,246,0.1); color:var(--accent-blue); border-color:var(--accent-blue); }
 .btn-page.active { background:var(--accent-blue); color:#fff; border-color:var(--accent-blue); font-weight:700; }
 .btn-page[disabled] { opacity:0.3; cursor:not-allowed; }
 .page-ellipsis { padding:0 4px; color:var(--text-muted); font-size:var(--font-size-xs); line-height:30px; }
@@ -42,18 +42,18 @@
 .toast-success { background:rgba(16,185,129,0.15); color:var(--accent-emerald); border-color:rgba(16,185,129,0.2); }
 .toast-error { background:rgba(244,63,94,0.15); color:var(--accent-rose); border-color:rgba(244,63,94,0.2); }
 .toast-warning { background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:rgba(245,158,11,0.2); }
-.toast-info { background:rgba(59,130,246,0.15); color:var(--accent-blue-light); border-color:rgba(59,130,246,0.2); }
+.toast-info { background:rgba(59,130,246,0.15); color:var(--accent-blue); border-color:rgba(59,130,246,0.2); }
 .toast-close { margin-left:auto; cursor:pointer; opacity:0.7; background:none; border:none; color:inherit; font-size:var(--font-size-lg); }
 .toast.toast-exit { animation:toast-out 0.3s ease-in forwards; }
 
 /* === Kanban Board === */
 .kanban-board { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-md); min-height:400px; }
-.kanban-column { background:rgba(15,22,41,0.4); border:1px solid var(--border-glass); border-radius:var(--radius-lg); display:flex; flex-direction:column; min-height:300px; }
+.kanban-column { background:#f8fafc; border:1px solid var(--border-color); border-radius:var(--radius-lg); display:flex; flex-direction:column; min-height:300px; }
 .kanban-column-header { padding:var(--space-md); border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; }
 .kanban-column-title { font-size:var(--font-size-sm); font-weight:600; display:flex; align-items:center; gap:var(--space-xs); }
 .kanban-count { padding:0.1em 0.4em; font-size:var(--font-size-xs); background:rgba(99,115,155,0.15); border-radius:var(--radius-full); color:var(--text-muted); }
 .kanban-column-body { flex:1; padding:var(--space-sm); display:flex; flex-direction:column; gap:var(--space-sm); overflow-y:auto; min-height:100px; }
-.kanban-card { padding:var(--space-md); background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:var(--radius-md); cursor:grab; transition:all var(--transition-base); }
+.kanban-card { padding:var(--space-md); background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); cursor:grab; transition:all var(--transition-base); box-shadow:var(--shadow-sm); }
 .kanban-card:hover { border-color:var(--border-color-hover); transform:translateY(-1px); box-shadow:var(--shadow-md); }
 .kanban-card.dragging { opacity:0.5; transform:rotate(2deg); }
 .kanban-card-title { font-size:var(--font-size-sm); font-weight:500; color:var(--text-primary); margin-bottom:var(--space-xs); }
@@ -66,25 +66,25 @@
 
 /* === Pipeline / CRM Stages === */
 .pipeline { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:var(--space-md); }
-.pipeline-stage { background:rgba(15,22,41,0.4); border:1px solid var(--border-glass); border-radius:var(--radius-lg); }
+.pipeline-stage { background:#f8fafc; border:1px solid var(--border-color); border-radius:var(--radius-lg); }
 .pipeline-stage-header { padding:var(--space-md); border-bottom:1px solid var(--border-color); }
 .pipeline-stage-title { font-size:var(--font-size-sm); font-weight:600; }
 .pipeline-stage-value { font-size:var(--font-size-xs); color:var(--text-muted); margin-top:2px; }
 .pipeline-stage-body { padding:var(--space-sm); display:flex; flex-direction:column; gap:var(--space-xs); min-height:80px; }
-.pipeline-deal { padding:var(--space-sm); background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:var(--radius-sm); cursor:pointer; transition:all var(--transition-fast); }
+.pipeline-deal { padding:var(--space-sm); background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-sm); cursor:pointer; transition:all var(--transition-fast); box-shadow:var(--shadow-sm); }
 .pipeline-deal:hover { border-color:var(--border-color-hover); }
 .pipeline-deal-name { font-size:var(--font-size-sm); font-weight:500; }
 .pipeline-deal-amount { font-size:var(--font-size-xs); color:var(--accent-emerald); margin-top:2px; }
 
 /* === Calendar View === */
-.calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:var(--border-color); border-radius:var(--radius-md); overflow:hidden; }
+.calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:#e2e8f0; border-radius:var(--radius-md); overflow:hidden; }
 .calendar-header-cell { padding:var(--space-sm); text-align:center; font-size:var(--font-size-xs); font-weight:600; color:var(--text-muted); background:var(--bg-tertiary); text-transform:uppercase; }
 .calendar-cell { padding:var(--space-xs); min-height:80px; background:var(--bg-secondary); position:relative; cursor:pointer; transition:background var(--transition-fast); }
 .calendar-cell:hover { background:var(--bg-tertiary); }
 .calendar-cell.today { background:rgba(59,130,246,0.08); }
 .calendar-cell.other-month { opacity:0.3; }
 .calendar-date { font-size:var(--font-size-xs); font-weight:500; color:var(--text-secondary); margin-bottom:4px; }
-.calendar-cell.today .calendar-date { color:var(--accent-blue-light); font-weight:700; }
+.calendar-cell.today .calendar-date { color:var(--accent-blue); font-weight:700; }
 .calendar-event { font-size:0.625rem; padding:1px 4px; border-radius:3px; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 /* === Activity Feed === */
@@ -104,9 +104,9 @@
 
 /* === Attendance Check-in === */
 .checkin-widget { text-align:center; padding:var(--space-xl); }
-.checkin-time { font-size:var(--font-size-4xl); font-weight:700; color:var(--text-white); font-variant-numeric:tabular-nums; margin-bottom:var(--space-md); }
+.checkin-time { font-size:var(--font-size-4xl); font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; margin-bottom:var(--space-md); }
 .checkin-date { font-size:var(--font-size-sm); color:var(--text-muted); margin-bottom:var(--space-xl); }
-.checkin-btn { width:120px; height:120px; border-radius:50%; border:3px solid var(--accent-blue); background:rgba(59,130,246,0.1); color:var(--accent-blue-light); font-size:var(--font-size-md); font-weight:600; cursor:pointer; transition:all var(--transition-base); font-family:var(--font-family); display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+.checkin-btn { width:120px; height:120px; border-radius:50%; border:3px solid var(--accent-blue); background:rgba(59,130,246,0.1); color:var(--accent-blue); font-size:var(--font-size-md); font-weight:600; cursor:pointer; transition:all var(--transition-base); font-family:var(--font-family); display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
 .checkin-btn:hover { background:rgba(59,130,246,0.2); box-shadow:0 0 30px rgba(59,130,246,0.2); transform:scale(1.05); }
 .checkin-btn.checked-in { border-color:var(--accent-emerald); background:rgba(16,185,129,0.1); color:var(--accent-emerald); }
 .checkin-btn svg { width:28px; height:28px; }
@@ -120,12 +120,12 @@
 .payslip-header { padding:var(--space-lg); background:var(--gradient-hero); border-bottom:1px solid var(--border-color); }
 .payslip-row { display:flex; justify-content:space-between; padding:0.6rem var(--space-lg); border-bottom:1px solid var(--border-color); font-size:var(--font-size-sm); }
 .payslip-row:last-child { border-bottom:none; }
-.payslip-row.total { font-weight:700; font-size:var(--font-size-md); background:rgba(59,130,246,0.05); color:var(--accent-blue-light); }
+.payslip-row.total { font-weight:700; font-size:var(--font-size-md); background:rgba(59,130,246,0.05); color:var(--accent-blue); }
 .payslip-label { color:var(--text-secondary); }
 .payslip-value { color:var(--text-primary); font-weight:500; font-variant-numeric:tabular-nums; }
 
 /* === Approval Flow === */
-.approval-card { padding:var(--space-lg); border:1px solid var(--border-color); border-radius:var(--radius-md); margin-bottom:var(--space-md); transition:all var(--transition-base); background:var(--bg-tertiary); }
+.approval-card { padding:var(--space-lg); border:1px solid var(--border-color); border-radius:var(--radius-md); margin-bottom:var(--space-md); transition:all var(--transition-base); background:#ffffff; box-shadow:var(--shadow-sm); }
 .approval-card:hover { border-color:var(--border-color-hover); }
 .approval-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-sm); }
 .approval-card-title { font-size:var(--font-size-base); font-weight:600; }

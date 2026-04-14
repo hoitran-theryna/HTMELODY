@@ -172,7 +172,7 @@ function openCreateEventModal(orders) {
     saveBtn.textContent = 'Đang lưu...';
 
     await store.add('events', {
-      id: store.generateId('EV'),
+      id: store.generateId('EV', 'events'),
       title,
       date,
       status,
@@ -217,7 +217,7 @@ function openEventDetail(ev, assets, orders, canEditMaterials) {
         <div><span style="color:var(--text-muted)">Địa điểm:</span> ${ev.location}</div>
         <div><span style="color:var(--text-muted)">Trạng thái:</span> ${getStatusBadge(ev.status)}</div>
         <div><span style="color:var(--text-muted)">Đơn hàng:</span> ${order?.id || '---'}</div>
-        ${ev.contractId ? `<div style="grid-column:span 2"><span style="color:var(--text-muted)">Hợp đồng:</span> <strong style="color:var(--accent-blue-light)">${store.get('contracts').find(c=>c.id===ev.contractId)?.ctrNo || ev.contractId}</strong> — ${store.get('contracts').find(c=>c.id===ev.contractId)?.aName || ''}</div>` : ''}
+        ${ev.contractId ? `<div style="grid-column:span 2"><span style="color:var(--text-muted)">Hợp đồng:</span> <strong style="color:var(--accent-blue)">${store.get('contracts').find(c=>c.id===ev.contractId)?.ctrNo || ev.contractId}</strong> — ${store.get('contracts').find(c=>c.id===ev.contractId)?.aName || ''}</div>` : ''}
       </div>
     </div>
 

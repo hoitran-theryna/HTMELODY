@@ -149,7 +149,7 @@ export default function renderPayroll(container) {
                 <td style="font-variant-numeric:tabular-nums">${formatFullCurrency(r.base)}</td>
                 <td style="font-variant-numeric:tabular-nums;color:var(--accent-emerald);font-weight:600">+${formatFullCurrency(r.commission)}</td>
                 <td style="color:var(--text-muted)">0 đ</td>
-                <td style="font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent-blue-light);font-size:16px">${formatFullCurrency(r.net)}</td>
+                <td style="font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent-blue);font-size:16px">${formatFullCurrency(r.net)}</td>
                 <td>
                   <div class="actions-cell">
                     <button class="btn btn-icon btn-sm" data-action="view-payslip" data-id="${r.employeeId}" title="Xem phiếu lương">${ICONS.eye}</button>
@@ -184,7 +184,7 @@ export default function renderPayroll(container) {
       if (!confirm(`Chốt lương ${lbl}?\n\nSau khi chốt, dữ liệu lương tháng này sẽ được lưu vĩnh viễn và không thể chỉnh sửa.`)) return;
       const currentRows = calcRows(selectedMonth);
       const result = await store.add('payroll_records', {
-        id: store.generateId('PR'),
+        id: store.generateId('PR', 'payroll_records'),
         month: selectedMonth,
         records: currentRows,
         totalNet: currentRows.reduce((s,r) => s + r.net, 0),
@@ -220,7 +220,7 @@ export default function renderPayroll(container) {
       showModal(`Phiếu Lương: ${eData.name}`, `
         <div style="text-align:center;margin-bottom:20px">
           <div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-bottom:4px">Kỳ thanh toán: ${label}</div>
-          <div style="font-weight:700;font-size:28px;color:var(--accent-blue-light);letter-spacing:-0.5px">${formatFullCurrency(rowData.net)}</div>
+          <div style="font-weight:700;font-size:28px;color:var(--accent-blue);letter-spacing:-0.5px">${formatFullCurrency(rowData.net)}</div>
           <div class="badge badge-emerald" style="margin-top:8px">Mã NV: ${eData.id}</div>
         </div>
         <div style="background:var(--bg-tertiary);border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-color)">
@@ -234,7 +234,7 @@ export default function renderPayroll(container) {
           </div>
           <div style="padding:16px;display:flex;justify-content:space-between;background:var(--bg-secondary)">
             <span style="font-weight:800;font-size:15px">TỔNG THỰC NHẬN</span>
-            <span style="font-weight:800;font-size:18px;color:var(--accent-blue-light)">${formatFullCurrency(rowData.net)}</span>
+            <span style="font-weight:800;font-size:18px;color:var(--accent-blue)">${formatFullCurrency(rowData.net)}</span>
           </div>
         </div>
         <p style="font-size:11px;color:var(--text-muted);margin-top:12px;text-align:center">

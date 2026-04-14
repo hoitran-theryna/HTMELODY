@@ -56,21 +56,28 @@ export default function renderOrders(container) {
     </div>
 
     <div class="card">
-      <div class="card-header">
+      <div class="card-header" style="flex-wrap:wrap;gap:8px">
         <h3>Danh sách Đơn hàng & Hợp đồng</h3>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <select class="form-select" id="order-type-filter" style="width:140px">
             <option value="">Tất cả mảng</option>
             <option value="neon">Chỉ LED Neon</option>
             <option value="event">Chỉ Sự kiện</option>
           </select>
-          <select class="form-select" id="order-status-filter" style="width:160px">
+          <select class="form-select" id="order-status-filter" style="width:150px">
             <option value="">Tất cả trạng thái</option>
             <option value="quoting">Đang báo giá</option>
             <option value="approved">Đã chốt</option>
             <option value="producing">Đang sản xuất</option>
             <option value="done">Hoàn thành</option>
           </select>
+          <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--bg-tertiary);border-radius:var(--radius-md);border:1px solid var(--border-color)">
+            <span style="font-size:12px;color:var(--text-muted);white-space:nowrap">Từ</span>
+            <input type="date" id="order-date-from" class="form-input" style="width:130px;padding:4px 8px;font-size:12px" />
+            <span style="font-size:12px;color:var(--text-muted)">→</span>
+            <input type="date" id="order-date-to" class="form-input" style="width:130px;padding:4px 8px;font-size:12px" />
+            <button class="btn btn-ghost btn-sm" id="order-date-clear" style="padding:4px 8px;font-size:11px;color:var(--text-muted)">× Xóa</button>
+          </div>
         </div>
       </div>
       <div class="data-table-wrapper">
@@ -96,14 +103,22 @@ export default function renderOrders(container) {
 
   let page = 1;
 
-  function renderTable(typeFilter = '', statusFilter = '', newPage = 1) {
+  function renderTable(typeFilter = '', statusFilter = '', dateFrom = '', dateTo = '', newPage = 1) {
     page = newPage;
     let data = orders;
     if (typeFilter) data = data.filter(o => o.type === typeFilter);
     if (statusFilter) data = data.filter(o => o.status === statusFilter);
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      data = data.filter(o => o.createdAt && new Date(o.createdAt) >= from);
+    }
+    if (dateTo) {
+      const to = new Date(dateTo); to.setHours(23, 59, 59, 999);
+      data = data.filter(o => o.createdAt && new Date(o.createdAt) <= to);
+    }
 
     // Sắp xếp đơn mới trước
-    data = data.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    data = data.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     if (data.length === 0) {
       document.getElementById('orders-table-body').innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted)">Không tìm thấy đơn hàng nào phù hợp.</td></tr>`;
@@ -133,7 +148,7 @@ export default function renderOrders(container) {
             ${isEvent ? '🎤 Sự kiện' : '✨ LED Neon'}
           </span>
         </td>
-        <td style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--accent-blue-light)">
+        <td style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--accent-blue)">
           ${formatFullCurrency(o.price)}
         </td>
         <td>${formatDate(o.deadline)}</td>
@@ -142,6 +157,7 @@ export default function renderOrders(container) {
           <div class="actions-cell">
             <button class="btn btn-icon btn-ghost btn-sm" data-action="view" data-id="${o.id}">${ICONS.eye}</button>
             ${perm === 'full' ? `<button class="btn btn-icon btn-ghost btn-sm" data-action="edit" data-id="${o.id}">${ICONS.edit}</button>` : ''}
+            ${auth.isDirector() ? `<button class="btn btn-icon btn-ghost btn-sm" style="color:var(--accent-rose)" data-action="delete" data-id="${o.id}" title="Xóa đơn hàng">${ICONS.trash}</button>` : ''}
           </div>
         </td>
       </tr>`;
@@ -150,22 +166,33 @@ export default function renderOrders(container) {
     const pag = document.getElementById('orders-pag');
     if (pag) {
       pag.innerHTML = paginationHTML(page, pages, total);
-      bindPagination(pag, p => renderTable(typeFilter, statusFilter, p));
+      bindPagination(pag, p => renderTable(typeFilter, statusFilter, dateFrom, dateTo, p));
     }
   }
 
   renderTable();
 
   // Filters
-  document.getElementById('order-type-filter')?.addEventListener('change', e => {
-    renderTable(e.target.value, document.getElementById('order-status-filter').value, 1);
-  });
-  document.getElementById('order-status-filter')?.addEventListener('change', e => {
-    renderTable(document.getElementById('order-type-filter').value, e.target.value, 1);
+  function applyFilters(newPage = 1) {
+    const typeF   = document.getElementById('order-type-filter')?.value || '';
+    const statusF = document.getElementById('order-status-filter')?.value || '';
+    const from    = document.getElementById('order-date-from')?.value || '';
+    const to      = document.getElementById('order-date-to')?.value || '';
+    renderTable(typeF, statusF, from, to, newPage);
+  }
+
+  document.getElementById('order-type-filter')?.addEventListener('change', () => applyFilters(1));
+  document.getElementById('order-status-filter')?.addEventListener('change', () => applyFilters(1));
+  document.getElementById('order-date-from')?.addEventListener('change', () => applyFilters(1));
+  document.getElementById('order-date-to')?.addEventListener('change', () => applyFilters(1));
+  document.getElementById('order-date-clear')?.addEventListener('click', () => {
+    document.getElementById('order-date-from').value = '';
+    document.getElementById('order-date-to').value = '';
+    applyFilters(1);
   });
 
   // Actions
-  container.addEventListener('click', e => {
+  container.addEventListener('click', async e => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
     const order = store.getById('orders', btn.dataset.id);
@@ -231,6 +258,39 @@ export default function renderOrders(container) {
           </div>
         </div>` : ''}
       `, { size: 'lg', footer: '<button class="btn btn-secondary" onclick="document.querySelector(\'.modal-overlay\').remove()">Đóng</button>' });
+    }
+
+    if (btn.dataset.action === 'delete' && auth.isDirector()) {
+      const cascadeLines = [];
+      const relatedDebt = store.get('debts').find(d => d.sourceId === order.id);
+      if (relatedDebt) cascadeLines.push(`• Công nợ: ${relatedDebt.id}`);
+      if (order.type === 'neon') {
+        const prod = store.get('production').find(p => p.orderId === order.id);
+        if (prod) cascadeLines.push(`• Thẻ sản xuất: ${prod.id}`);
+      } else {
+        const ev = store.get('events').find(e => e.orderId === order.id);
+        if (ev) cascadeLines.push(`• Lịch sự kiện: ${ev.id}`);
+      }
+      const relatedFunds = store.get('funds').filter(f => f.refId === order.id);
+      if (relatedFunds.length) cascadeLines.push(`• ${relatedFunds.length} giao dịch Sổ quỹ`);
+
+      const confirmMsg = `Xóa vĩnh viễn đơn hàng ${order.id}?\n\nDữ liệu sẽ bị xóa theo:\n${cascadeLines.join('\n') || '(không có liên kết)'}`;
+      if (!confirm(confirmMsg)) return;
+
+      if (relatedDebt) await store.remove('debts', relatedDebt.id, true);
+      if (order.type === 'neon') {
+        const prod = store.get('production').find(p => p.orderId === order.id);
+        if (prod) await store.remove('production', prod.id, true);
+      } else {
+        const ev = store.get('events').find(e => e.orderId === order.id);
+        if (ev) await store.remove('events', ev.id, true);
+      }
+      for (const f of relatedFunds) await store.remove('funds', f.id, true);
+      await store.remove('orders', order.id, true);
+
+      showToast(`Đã xóa đơn hàng ${order.id} và tất cả dữ liệu liên quan!`, 'success');
+      renderOrders(container);
+      return;
     }
 
     if (btn.dataset.action === 'edit') {
@@ -408,7 +468,7 @@ export default function renderOrders(container) {
       const partnerName = cus?.name || '';
       const partnerPhone = cus?.phone || cus?.contact || '';
 
-      const orderId = store.generateId('OD');
+      const orderId = store.generateId('OD', 'orders');
       const now = new Date().toISOString();
       const debtStatus = deposit >= (price + shippingFee) ? 'paid' : deposit > 0 ? 'partial' : 'pending';
 
@@ -423,18 +483,18 @@ export default function renderOrders(container) {
       // 2. Tạo thẻ Kanban (LED) hoặc Lịch sự kiện (Event)
       if (type === 'neon') {
         await store.add('production', {
-          id: store.generateId('PR'), orderId, step: 'preparing', assignee: ''
+          id: store.generateId('PR', 'production'), orderId, step: 'preparing', assignee: ''
         });
       } else {
         await store.add('events', {
-          id: store.generateId('EV'), orderId, title: 'Triển khai: ' + title,
+          id: store.generateId('EV', 'events'), orderId, title: 'Triển khai: ' + title,
           date: deadline, location: 'Cần cập nhật', status: 'preparing', team: []
         });
       }
 
       // 3. Tạo Công nợ tự động — đầy đủ thông tin, không cần lên thủ công
       await store.add('debts', {
-        id: store.generateId('DB'),
+        id: store.generateId('DB', 'debts'),
         type: 'receivable',
         branch: type === 'neon' ? 'led' : 'event',
         partnerId: custId,
@@ -458,7 +518,7 @@ export default function renderOrders(container) {
       // 4. Ghi vào Sổ Quỹ nếu có tiền cọc
       if (deposit > 0) {
         await store.add('funds', {
-          id: store.generateId('FD'),
+          id: store.generateId('FD', 'funds'),
           date: now.split('T')[0],
           account: depositAcc,
           type: 'in',

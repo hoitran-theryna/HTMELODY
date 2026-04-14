@@ -77,13 +77,15 @@ class Router {
       }, 150);
     }
 
-    // Update active nav and breadcrumb
+    // Update active nav, breadcrumb, và bottom tabs
     setTimeout(() => {
       document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.toggle('active', item.dataset.route === hash);
       });
       const breadcrumb = document.getElementById('breadcrumb-current');
       if (breadcrumb) breadcrumb.textContent = route.title || hash;
+      // Thông báo cho bottom tab bar sync (kể cả khi dùng back/forward browser)
+      window.dispatchEvent(new CustomEvent('erp-route-changed', { detail: { route: hash } }));
     }, 50);
   }
 

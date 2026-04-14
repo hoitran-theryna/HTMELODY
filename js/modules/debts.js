@@ -14,16 +14,43 @@ export default function renderDebts(container) {
   const perm = auth.getPermission('debts');
   let currentTab = 'led'; // 'led' or 'event'
   let ledPage = 1, eventPage = 1, payablePage = 1;
+  let debtDateFrom = '';
+  let debtDateTo = '';
 
   const render = () => {
     const debts = store.get('debts');
-    const ledDebts = debts.filter(d => d.branch !== 'event' && d.type === 'receivable');
-    const eventDebts = debts.filter(d => d.branch === 'event' && d.type === 'receivable');
-    const payables = debts.filter(d => d.type === 'payable');
+
+    // Hàm sort mới nhất trước
+    const sortNewest = arr => [...arr].sort((a, b) =>
+      new Date(b.createdAt || b.saleDate || 0) - new Date(a.createdAt || a.saleDate || 0)
+    );
+    // Hàm lọc theo khoảng ngày
+    const filterByDate = arr => {
+      let result = arr;
+      if (debtDateFrom) {
+        const from = new Date(debtDateFrom);
+        result = result.filter(d => {
+          const dt = d.createdAt || d.saleDate;
+          return dt && new Date(dt) >= from;
+        });
+      }
+      if (debtDateTo) {
+        const to = new Date(debtDateTo); to.setHours(23, 59, 59, 999);
+        result = result.filter(d => {
+          const dt = d.createdAt || d.saleDate;
+          return dt && new Date(dt) <= to;
+        });
+      }
+      return result;
+    };
+
+    const ledDebts   = filterByDate(sortNewest(debts.filter(d => d.branch !== 'event' && d.type === 'receivable')));
+    const eventDebts = filterByDate(sortNewest(debts.filter(d => d.branch === 'event'  && d.type === 'receivable')));
+    const payables   = filterByDate(sortNewest(debts.filter(d => d.type === 'payable')));
 
     const totalReceivable = debts.filter(d => d.type === 'receivable').reduce((sum, d) => sum + ((d.totalAmount || 0) + (d.shippingFee || 0) - (d.paidAmount || 0)), 0);
-    const totalPayable = payables.reduce((sum, d) => sum + (d.totalAmount - d.paidAmount), 0);
-    const overdueCount = debts.filter(d => d.status !== 'paid' && new Date(d.dueDate) < new Date()).length;
+    const totalPayable = payables.reduce((sum, d) => sum + ((d.totalAmount || 0) - (d.paidAmount || 0)), 0);
+    const overdueCount = debts.filter(d => d.status !== 'paid' && d.dueDate && new Date(d.dueDate) < new Date()).length;
 
     container.innerHTML = `
       <div class="page-header">
@@ -57,20 +84,29 @@ export default function renderDebts(container) {
       <div class="content-grid" style="grid-template-columns:1fr; gap:24px">
         <!-- Tabs Chuyên Nghiệp -->
         <div style="display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: -24px; padding-left: 8px; gap: 24px;">
-          <div id="tab-led" style="padding: 12px 16px; cursor: pointer; color: ${currentTab === 'led' ? 'var(--accent-blue-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${currentTab === 'led' ? 'var(--accent-blue-light)' : 'transparent'}; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+          <div id="tab-led" style="padding: 12px 16px; cursor: pointer; color: ${currentTab === 'led' ? 'var(--accent-blue)' : 'var(--text-muted)'}; border-bottom: 2px solid ${currentTab === 'led' ? 'var(--accent-blue)' : 'transparent'}; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
             <span style="width:18px; height:18px;">${ICONS.tool}</span> Đèn LED & Bảng hiệu
           </div>
-          <div id="tab-event" style="padding: 12px 16px; cursor: pointer; color: ${currentTab === 'event' ? 'var(--accent-blue-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${currentTab === 'event' ? 'var(--accent-blue-light)' : 'transparent'}; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+          <div id="tab-event" style="padding: 12px 16px; cursor: pointer; color: ${currentTab === 'event' ? 'var(--accent-blue)' : 'var(--text-muted)'}; border-bottom: 2px solid ${currentTab === 'event' ? 'var(--accent-blue)' : 'transparent'}; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
             <span style="width:18px; height:18px;">${ICONS.speaker}</span> Tổ chức Sự kiện
           </div>
         </div>
 
         <div class="card" style="margin-top: 24px;">
-          <div class="card-header" style="justify-content: space-between">
+          <div class="card-header" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
             <h3 style="color:var(--accent-emerald)">
               ${currentTab === 'led' ? 'Công nợ Khách hàng - Mảng Sản xuất & Quảng cáo' : 'Công nợ Khách hàng - Mảng Sự kiện'}
             </h3>
-            <span class="badge badge-blue">${(currentTab === 'led' ? ledDebts : eventDebts).length} Khoản nợ</span>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--bg-tertiary);border-radius:var(--radius-md);border:1px solid var(--border-color)">
+                <span style="font-size:12px;color:var(--text-muted);white-space:nowrap">Từ</span>
+                <input type="date" id="debt-date-from" class="form-input" style="width:130px;padding:4px 8px;font-size:12px" value="${debtDateFrom}" />
+                <span style="font-size:12px;color:var(--text-muted)">→</span>
+                <input type="date" id="debt-date-to" class="form-input" style="width:130px;padding:4px 8px;font-size:12px" value="${debtDateTo}" />
+                <button class="btn btn-ghost btn-sm" id="debt-date-clear" style="padding:4px 8px;font-size:11px;color:var(--text-muted)">× Xóa</button>
+              </div>
+              <span class="badge badge-blue">${(currentTab === 'led' ? ledDebts : eventDebts).length} Khoản nợ</span>
+            </div>
           </div>
           <div class="data-table-wrapper" style="overflow-x: auto" id="debt-main-wrap"></div>
           <div id="debt-main-pag"></div>
@@ -121,6 +157,16 @@ export default function renderDebts(container) {
     // Re-attach listeners for elements inside the template
     container.querySelector('#tab-led').onclick = () => { currentTab = 'led'; ledPage = 1; render(); };
     container.querySelector('#tab-event').onclick = () => { currentTab = 'event'; eventPage = 1; render(); };
+
+    container.querySelector('#debt-date-from')?.addEventListener('change', e => {
+      debtDateFrom = e.target.value; ledPage = 1; eventPage = 1; payablePage = 1; render();
+    });
+    container.querySelector('#debt-date-to')?.addEventListener('change', e => {
+      debtDateTo = e.target.value; ledPage = 1; eventPage = 1; payablePage = 1; render();
+    });
+    container.querySelector('#debt-date-clear')?.addEventListener('click', () => {
+      debtDateFrom = ''; debtDateTo = ''; ledPage = 1; render();
+    });
     
     container.querySelector('#btn-add-debt')?.addEventListener('click', () => {
       const today = new Date().toISOString().split('T')[0];
@@ -139,7 +185,7 @@ export default function renderDebts(container) {
           </div>
         </div>
 
-        <div id="led-special-fields" style="background:var(--bg-tertiary); padding:16px; border-radius:8px; margin-bottom:16px; border: 1px solid var(--accent-blue-light)">
+        <div id="led-special-fields" style="background:var(--bg-tertiary); padding:16px; border-radius:8px; margin-bottom:16px; border: 1px solid var(--accent-blue)">
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
             <div class="form-group"><label class="form-label">Ngày chốt sale</label><input type="date" id="form-debt-sale-date" class="form-input" value="${today}" /></div>
             <div class="form-group"><label class="form-label">Ngày giao hàng</label><input type="date" id="form-debt-delivery-date" class="form-input" /></div>
@@ -179,7 +225,7 @@ export default function renderDebts(container) {
         }
 
         store.add('debts', {
-          id: store.generateId('DB'), 
+          id: store.generateId('DB', 'debts'), 
           type: 'receivable', 
           branch,
           partnerName: partner,
@@ -207,7 +253,7 @@ export default function renderDebts(container) {
   };
 
   // Delegate click for payment (so it doesn't need re-attaching)
-  container.addEventListener('click', e => {
+  container.addEventListener('click', async e => {
     // Handle edit-debt action
     const editBtn = e.target.closest('[data-action="edit-debt"]');
     if (editBtn) {
@@ -249,6 +295,18 @@ export default function renderDebts(container) {
         modal.close();
         render();
       });
+      return;
+    }
+
+    const deleteDebtBtn = e.target.closest('[data-action="delete-debt"]');
+    if (deleteDebtBtn && auth.isDirector()) {
+      const debt = store.getById('debts', deleteDebtBtn.dataset.id);
+      if (!debt) return;
+      const partnerLabel = debt.partnerName || debt.sourceId || debt.id;
+      if (!confirm(`Xóa vĩnh viễn khoản công nợ ${debt.id}?\nĐối tác: ${partnerLabel}`)) return;
+      await store.remove('debts', debt.id, true);
+      showToast(`Đã xóa công nợ ${debt.id}!`, 'success');
+      render();
       return;
     }
 
@@ -309,7 +367,7 @@ export default function renderDebts(container) {
         // Ghi vào sổ quỹ
         const partnerLabel = debt.partnerName || debt.sourceId || debt.id;
         await store.add('funds', {
-          id: store.generateId('FD'),
+          id: store.generateId('FD', 'funds'),
           date: modal.overlay.querySelector('#pay-date').value,
           account: modal.overlay.querySelector('#pay-fund').value,
           type: debt.type === 'receivable' ? 'in' : 'out',
@@ -371,7 +429,7 @@ function renderLEDTable(data, perm) {
             </td>
             <td>
                <div style="font-weight:600; color:var(--text-primary)">${partnerName}</div>
-               <div style="font-size:10px; color:var(--accent-blue-light)">${partnerPhone || ''}</div>
+               <div style="font-size:10px; color:var(--accent-blue)">${partnerPhone || ''}</div>
             </td>
             <td>
                <div style="font-size:12px">${d.size || '---'}</div>
@@ -397,6 +455,7 @@ function renderLEDTable(data, perm) {
             <td>
                <button class="btn btn-sm btn-success" data-action="pay" data-id="${d.id}" title="Thu tiền">${ICONS.wallet}</button>
                <button class="btn btn-sm btn-ghost" data-action="edit-debt" data-id="${d.id}" title="Sửa thông tin BH">${ICONS.edit}</button>
+               ${auth.isDirector() ? `<button class="btn btn-sm btn-ghost" style="color:var(--accent-rose)" data-action="delete-debt" data-id="${d.id}" title="Xóa công nợ">${ICONS.trash}</button>` : ''}
             </td>` : ''}
           </tr>`;
         }).join('')}
@@ -434,7 +493,7 @@ function renderDebtTable(data, type, perm) {
           
           let partnerInfo = `
             <div style="font-weight:600; color:var(--text-primary)">${partnerName}</div>
-            ${d.partnerPhone ? `<div style="font-size:11px; color:var(--accent-blue-light)">📞 ${d.partnerPhone}</div>` : ''}
+            ${d.partnerPhone ? `<div style="font-size:11px; color:var(--accent-blue)">📞 ${d.partnerPhone}</div>` : ''}
             ${d.partnerAddress ? `<div style="font-size:11px; color:var(--text-muted); max-width:200px; line-height:1.2; margin-top:2px">${d.partnerAddress}</div>` : ''}
           `;
           const salesPerson = d.salesId ? store.getById('employees', d.salesId) : null;
@@ -465,6 +524,7 @@ function renderDebtTable(data, type, perm) {
             <td>
               <div style="display:flex;gap:4px">
                  ${d.status !== 'paid' ? `<button class="btn btn-sm ${type==='receivable'?'btn-success':'btn-danger'}" data-action="pay" data-id="${d.id}" title="Ghi nhận thanh toán">${ICONS.wallet}</button>` : '<span style="color:var(--text-muted);font-size:var(--font-size-xs)">Xong</span>'}
+                 ${auth.isDirector() ? `<button class="btn btn-sm btn-ghost" style="color:var(--accent-rose)" data-action="delete-debt" data-id="${d.id}" title="Xóa công nợ">${ICONS.trash}</button>` : ''}
               </div>
             </td>
             ` : ''}

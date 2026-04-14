@@ -134,7 +134,7 @@ export default function renderAssets(container) {
         <td style="font-variant-numeric:tabular-nums">${formatFullCurrency(a.price)}</td>
         <td style="font-variant-numeric:tabular-nums">${formatFullCurrency((a.quantity||0)*(a.price||0))}</td>
         ${perm === 'full' ? `<td style="text-align:center">
-          <button class="btn-icon btn-edit-asset" data-id="${a.id}" title="Sửa" style="color:var(--accent-blue-light);background:none;border:none;cursor:pointer;padding:4px 8px">${ICONS.edit}</button>
+          <button class="btn-icon btn-edit-asset" data-id="${a.id}" title="Sửa" style="color:var(--accent-blue);background:none;border:none;cursor:pointer;padding:4px 8px">${ICONS.edit}</button>
           <button class="btn-icon btn-del-asset" data-id="${a.id}" title="Xóa" style="color:var(--accent-rose);background:none;border:none;cursor:pointer;padding:4px 8px">${ICONS.trash}</button>
         </td>` : ''}
       </tr>`;
@@ -242,7 +242,7 @@ function openAssetModal(asset, onSave) {
       showToast('Đã cập nhật vật tư', 'success');
     } else {
       await store.add('assets', {
-        id: store.generateId('AST'),
+        id: store.generateId('AST', 'assets'),
         name, type, unit, quantity: qty, price
       });
       showToast('Đã thêm vật tư vào kho', 'success');

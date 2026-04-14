@@ -2,6 +2,11 @@
 // ERP SYSTEM - ATTENDANCE MODULE
 // ============================================
 
+import store from '../store.js';
+import auth from '../auth.js';
+import { ICONS } from '../components/icons.js';
+import { showToast } from '../components/toast.js';
+
 export default function renderAttendance(container) {
   container.innerHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:24px;padding:40px">
@@ -50,7 +55,7 @@ function _renderAttendanceFull(container) {
   document.getElementById('btn-checkin')?.addEventListener('click', () => {
      if (isCheckedIn) { showToast('Bạn đã chấm công ngày hôm nay rồi!', 'info'); return; }
      store.add('attendance', {
-        id: store.generateId('AT'), date: today, employeeId: user.id,
+        id: store.generateId('AT', 'attendance'), date: today, employeeId: user.id,
         checkIn: new Date().toLocaleTimeString('vi-VN', { hour12: false, hour: '2-digit', minute:'2-digit' }),
         checkOut: '', status: 'present'
      });

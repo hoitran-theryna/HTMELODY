@@ -55,6 +55,7 @@ class Auth {
   }
 
   isLoggedIn() { return !!this.currentUser; }
+  isDirector() { return this.currentRole === 'director'; }
   getUser() { return this.currentUser; }
   getRole() { return this.currentRole; }
   getRoleName() { return ROLES[this.currentRole]?.name || ''; }

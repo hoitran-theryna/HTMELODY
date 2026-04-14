@@ -95,7 +95,7 @@ export default function renderHR(container) {
       <tr>
         <td>
           <div class="user-cell">
-            <div class="avatar avatar-sm" style="background:${e.avatar||'#10b981;font-weight:bold'}">${getInitials(e.name || 'AA')}</div>
+            <div class="avatar avatar-sm" style="background:${e.avatar||'#10b981'}">${getInitials(e.name || 'AA')}</div>
             <div>
               <div style="font-weight:600">${e.name||'Chưa rõ Tên'}</div>
               ${perm==='full' ? `<div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">UID: <b>${e.username||'N/A'}</b> | Pass: <b>${e.password||'***'}</b></div>` : ''}
@@ -201,7 +201,7 @@ export default function renderHR(container) {
           store.update('employees', empId, updates);
           showToast(`Đã Sửa hồ sơ của: ${name}`, 'success');
        } else {
-          updates.id = store.generateId('EMP');
+          updates.id = store.generateId('EMP', 'employees');
           updates.joinDate = new Date().toISOString().split('T')[0];
           updates.avatar = '#' + Math.floor(Math.random()*16777215).toString(16);
           store.add('employees', updates);

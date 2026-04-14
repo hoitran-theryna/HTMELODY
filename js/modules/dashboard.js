@@ -54,7 +54,7 @@ export default function renderDashboard(container) {
         <div class="stat-card">
           <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-info)">${ICONS['trending-up']}</div></div>
           <div class="stat-card-value" style="font-size:20px">${formatFullCurrency(totalReceivable)}</div>
-          <div class="stat-card-label" style="color:var(--accent-blue-light);font-weight:600">PHI THU (Khách nợ)</div>
+          <div class="stat-card-label" style="color:var(--accent-blue);font-weight:600">PHI THU (Khách nợ)</div>
         </div>
         <div class="stat-card">
           <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-danger)">${ICONS['trending-down']}</div></div>
@@ -199,7 +199,7 @@ export default function renderDashboard(container) {
                  ${recentOrders.map((o) => {
                    const statusMap = { pending:'Chờ duyệt', approved:'Đã duyệt', producing:'Đang SX', done:'Hoàn thành', delivered:'Đã giao', cancelled:'Đã hủy' };
                    const statusBg  = { pending:'rgba(245,158,11,.15)', approved:'rgba(59,130,246,.15)', producing:'rgba(139,92,246,.15)', done:'rgba(16,185,129,.15)', delivered:'rgba(100,116,139,.15)', cancelled:'rgba(239,68,68,.15)' };
-                   const statusClr = { pending:'var(--accent-amber)', approved:'var(--accent-blue-light)', producing:'#a78bfa', done:'var(--accent-emerald)', delivered:'var(--text-muted)', cancelled:'var(--accent-rose)' };
+                   const statusClr = { pending:'var(--accent-amber)', approved:'var(--accent-blue)', producing:'#a78bfa', done:'var(--accent-emerald)', delivered:'var(--text-muted)', cancelled:'var(--accent-rose)' };
                    const isOverdue = o.deadline && new Date(o.deadline) < now && !['done','delivered','cancelled'].includes(o.status);
                    const typeTag = o.type === 'neon'
                      ? '<span style="font-size:10px;background:rgba(139,92,246,.2);color:#a78bfa;padding:1px 6px;border-radius:4px;margin-left:6px">Neon</span>'

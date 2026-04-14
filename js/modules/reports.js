@@ -113,23 +113,23 @@ export default function renderReports(container) {
           <div class="card-header"><h3>Bảng Cân đối Doanh thu — ${label}</h3></div>
           <div class="card-body" style="padding:0">
             <table style="width:100%;text-align:left;border-collapse:collapse;font-size:14px">
-              <thead style="background:#1e293b">
+              <thead style="background:#f8fafc">
                 <tr>
-                  <th style="padding:12px 16px;border-bottom:1px solid #334155">Chỉ tiêu</th>
-                  <th style="padding:12px 16px;border-bottom:1px solid #334155;text-align:right">Thành tiền (VNĐ)</th>
+                  <th style="padding:12px 16px;border-bottom:2px solid #e2e8f0;color:#374151;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:0.04em">Chỉ tiêu</th>
+                  <th style="padding:12px 16px;border-bottom:2px solid #e2e8f0;text-align:right;color:#374151;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:0.04em">Thành tiền (VNĐ)</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td style="padding:12px 16px;border-bottom:1px solid #334155;font-weight:600">I. DOANH THU HOẠT ĐỘNG</td><td style="padding:12px 16px;text-align:right;border-bottom:1px solid #334155;font-weight:600">${formatFullCurrency(totalRevenue)}</td></tr>
-                <tr><td style="padding:12px 16px;padding-left:32px;border-bottom:1px dashed #334155">1. Doanh thu HĐ Gia công LED Neon</td><td style="padding:12px 16px;text-align:right;border-bottom:1px dashed #334155">${formatFullCurrency(revenueNeon)}</td></tr>
-                <tr><td style="padding:12px 16px;padding-left:32px;border-bottom:1px solid #334155">2. Doanh thu HĐ Sự kiện & Thiết bị</td><td style="padding:12px 16px;text-align:right;border-bottom:1px solid #334155">${formatFullCurrency(revenueEvent)}</td></tr>
+                <tr style="background:#f0f9ff"><td style="padding:12px 16px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#1e40af">I. DOANH THU HOẠT ĐỘNG</td><td style="padding:12px 16px;text-align:right;border-bottom:1px solid #e2e8f0;font-weight:700;color:#1e40af">${formatFullCurrency(totalRevenue)}</td></tr>
+                <tr><td style="padding:10px 16px;padding-left:32px;border-bottom:1px dashed #e2e8f0;color:#475569">1. Doanh thu HĐ Gia công LED Neon</td><td style="padding:10px 16px;text-align:right;border-bottom:1px dashed #e2e8f0;color:#475569">${formatFullCurrency(revenueNeon)}</td></tr>
+                <tr><td style="padding:10px 16px;padding-left:32px;border-bottom:1px solid #e2e8f0;color:#475569">2. Doanh thu HĐ Sự kiện & Thiết bị</td><td style="padding:10px 16px;text-align:right;border-bottom:1px solid #e2e8f0;color:#475569">${formatFullCurrency(revenueEvent)}</td></tr>
 
-                <tr><td style="padding:12px 16px;border-bottom:1px solid #334155;font-weight:600">II. TỔNG CHI PHÍ HOẠT ĐỘNG (Ước tính)</td><td style="padding:12px 16px;text-align:right;border-bottom:1px solid #334155;font-weight:600;color:var(--accent-rose)">(${formatFullCurrency(totalExpense)})</td></tr>
-                <tr><td style="padding:12px 16px;padding-left:32px;border-bottom:1px dashed #334155">1. Chi phí mua vật tư & thiết bị (Chi quỹ tháng)</td><td style="padding:12px 16px;text-align:right;border-bottom:1px dashed #334155">(${formatFullCurrency(materialCost)})</td></tr>
-                <tr><td style="padding:12px 16px;padding-left:32px;border-bottom:1px dashed #334155">2. Chi phí nhân sự (Lương cố định)</td><td style="padding:12px 16px;text-align:right;border-bottom:1px dashed #334155">(${formatFullCurrency(payrollCost)})</td></tr>
-                <tr><td style="padding:12px 16px;padding-left:32px;border-bottom:1px solid #334155">3. Chi phí vận hành, khác (Chi quỹ còn lại)</td><td style="padding:12px 16px;text-align:right;border-bottom:1px solid #334155">(${formatFullCurrency(otherOpsCost)})</td></tr>
+                <tr style="background:#fff5f5"><td style="padding:12px 16px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#be123c">II. TỔNG CHI PHÍ HOẠT ĐỘNG (Ước tính)</td><td style="padding:12px 16px;text-align:right;border-bottom:1px solid #e2e8f0;font-weight:700;color:#be123c">(${formatFullCurrency(totalExpense)})</td></tr>
+                <tr><td style="padding:10px 16px;padding-left:32px;border-bottom:1px dashed #e2e8f0;color:#475569">1. Chi phí mua vật tư & thiết bị (Chi quỹ tháng)</td><td style="padding:10px 16px;text-align:right;border-bottom:1px dashed #e2e8f0;color:#475569">(${formatFullCurrency(materialCost)})</td></tr>
+                <tr><td style="padding:10px 16px;padding-left:32px;border-bottom:1px dashed #e2e8f0;color:#475569">2. Chi phí nhân sự (Lương cố định)</td><td style="padding:10px 16px;text-align:right;border-bottom:1px dashed #e2e8f0;color:#475569">(${formatFullCurrency(payrollCost)})</td></tr>
+                <tr><td style="padding:10px 16px;padding-left:32px;border-bottom:1px solid #e2e8f0;color:#475569">3. Chi phí vận hành, khác (Chi quỹ còn lại)</td><td style="padding:10px 16px;text-align:right;border-bottom:1px solid #e2e8f0;color:#475569">(${formatFullCurrency(otherOpsCost)})</td></tr>
 
-                <tr style="background:#0f172a"><td style="padding:16px;font-weight:700;font-size:16px;color:var(--accent-blue-light)">LỢI NHUẬN TRƯỚC THUẾ (I-II)</td><td style="padding:16px;text-align:right;font-weight:700;font-size:16px;color:${netProfit >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)'}">${formatFullCurrency(netProfit)}</td></tr>
+                <tr style="background:${netProfit >= 0 ? '#f0fdf4' : '#fff1f2'}"><td style="padding:16px;font-weight:800;font-size:15px;color:${netProfit >= 0 ? '#166534' : '#be123c'}">LỢI NHUẬN TRƯỚC THUẾ (I-II)</td><td style="padding:16px;text-align:right;font-weight:800;font-size:15px;color:${netProfit >= 0 ? '#166534' : '#be123c'}">${formatFullCurrency(netProfit)}</td></tr>
               </tbody>
             </table>
           </div>

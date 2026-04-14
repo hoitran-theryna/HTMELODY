@@ -136,7 +136,7 @@ class Store {
          if (error) throw error;
 
          const idx = this.state[collection]?.findIndex(item => item.id === id);
-         if (idx !== -1) {
+         if (idx >= 0) {
             this.state[collection][idx] = { ...this.state[collection][idx], ...updates };
          }
 
@@ -150,7 +150,8 @@ class Store {
    }
 
    // XÓA: Đợi Supabase xác nhận xóa thành công
-   async remove(collection, id) {
+   // silent=true dùng khi xóa cascade (để caller tự hiển thị toast tổng hợp)
+   async remove(collection, id, silent = false) {
       const dbTable = this.tables[collection];
       if (!dbTable) return;
 
@@ -163,7 +164,7 @@ class Store {
          this.state[collection] = this.state[collection]?.filter(item => item.id !== id);
 
          this.emit(collection, this.state[collection]);
-         showToast("Đã xóa vĩnh viễn trên Supabase", "success");
+         if (!silent) showToast("Đã xóa vĩnh viễn trên Supabase", "success");
       } catch (err) {
          console.error("Lỗi xóa dữ liệu:", err);
          showToast("Xóa thất bại: " + err.message, "error");
@@ -190,10 +191,18 @@ class Store {
    getDepartmentName(id) { return this.getById('departments', id)?.name || 'N/A'; }
    getEmployee(id) { return this.getById('employees', id); }
 
-   generateId(prefix) {
-      const items = Object.values(this.state).flat().filter(i => i?.id?.toString().startsWith(prefix));
-      const max = items.reduce((m, i) => { const n = parseInt(i.id.replace(prefix, '').replace('-', '')) || 0; return n > m ? n : m; }, 0);
-      return `${prefix}-${String(max + 1).padStart(2, '0')}`;
+   generateId(prefix, collection) {
+      // Ưu tiên scan đúng collection, fallback scan toàn bộ nếu không chỉ định
+      const source = collection
+        ? (this.state[collection] || [])
+        : Object.values(this.state).flat();
+      const re = new RegExp(`^${prefix}-(\\d+)$`);
+      const max = source.reduce((m, i) => {
+        const match = i?.id?.toString().match(re);
+        const n = match ? parseInt(match[1]) : 0;
+        return n > m ? n : m;
+      }, 0);
+      return `${prefix}-${String(max + 1).padStart(3, '0')}`;
    }
 }
 

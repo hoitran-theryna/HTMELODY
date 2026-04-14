@@ -119,6 +119,10 @@ function renderMainApp() {
     </div>
     <nav class="bottom-tabbar" id="bottom-tabbar">
       <div class="bottom-tabbar-inner">
+        <button class="bottom-tab" data-route="dashboard" id="btab-dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Tổng quan
+        </button>
         <button class="bottom-tab" data-route="orders" id="btab-orders">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
           Đơn hàng
@@ -147,6 +151,7 @@ function renderMainApp() {
   const closeSidebar = () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); };
 
   document.getElementById('btn-hamburger')?.addEventListener('click', openSidebar);
+  document.getElementById('btn-sidebar-close')?.addEventListener('click', closeSidebar);
   overlay.addEventListener('click', closeSidebar);
 
   // ── Sidebar nav items ──
@@ -166,18 +171,20 @@ function renderMainApp() {
     });
   });
 
+
   function updateBottomTabs(activeRoute) {
     document.querySelectorAll('.bottom-tab').forEach(t => {
       t.classList.toggle('active', t.dataset.route === activeRoute);
     });
   }
 
-  // Sync bottom tabs with router
+  // Sync bottom tabs — bắt cả navigate() lẫn browser back/forward
   const origNavigate = router.navigate.bind(router);
   router.navigate = (route) => {
     origNavigate(route);
     updateBottomTabs(route);
   };
+  window.addEventListener('erp-route-changed', e => updateBottomTabs(e.detail.route));
 
   // ── Logout ──
   document.getElementById('sidebar-user-area')?.addEventListener('click', () => {

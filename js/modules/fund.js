@@ -64,7 +64,7 @@ export default function renderFund(container) {
         </div>
         <div class="stat-card">
           <div class="stat-card-header"><div class="stat-card-icon" style="background:var(--gradient-info)">${ICONS.dashboard}</div></div>
-          <div class="stat-card-value" style="color:var(--accent-blue-light)">${formatFullCurrency(bankBalance)}</div>
+          <div class="stat-card-value" style="color:var(--accent-blue)">${formatFullCurrency(bankBalance)}</div>
           <div class="stat-card-label">Số dư Ngân Hàng</div>
         </div>
         <div class="stat-card">
@@ -153,7 +153,7 @@ export default function renderFund(container) {
           <td style="font-variant-numeric:tabular-nums;color:var(--accent-rose)">
             ${!isIn ? '−' + formatFullCurrency(f.amount) : ''}
           </td>
-          <td style="font-size:11px;color:var(--accent-blue-light)">${f.refId || '---'}</td>
+          <td style="font-size:11px;color:var(--accent-blue)">${f.refId || '---'}</td>
         </tr>`;
       }).join('');
 
@@ -203,7 +203,7 @@ export default function renderFund(container) {
         const amt = parseInt(modal.overlay.querySelector('#ob-amount').value) || 0;
         if (amt <= 0) { showToast('Vui lòng nhập số tiền hợp lệ', 'error'); return; }
         await store.add('funds', {
-          id: store.generateId('FD'),
+          id: store.generateId('FD', 'funds'),
           date: modal.overlay.querySelector('#ob-date').value,
           account: modal.overlay.querySelector('#ob-acc').value,
           type: 'in',
@@ -278,7 +278,7 @@ export default function renderFund(container) {
         saveBtn.disabled = true;
 
         await store.add('funds', {
-          id: store.generateId('FD'),
+          id: store.generateId('FD', 'funds'),
           date: modal.overlay.querySelector('#form-fund-date').value,
           type: modal.overlay.querySelector('#form-fund-type').value,
           account: modal.overlay.querySelector('#form-fund-acc').value,

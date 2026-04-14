@@ -163,7 +163,7 @@ function _renderTaxFull(container) {
       }
 
       store.add('taxes', {
-        id: store.generateId('TX'), type, period, amount,
+        id: store.generateId('TX', 'taxes'), type, period, amount,
         deadline: due, note, status: 'pending'
       });
 

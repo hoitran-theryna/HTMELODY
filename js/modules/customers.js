@@ -4,6 +4,7 @@
 
 import store from '../store.js';
 import auth from '../auth.js';
+
 import { ICONS } from '../components/icons.js';
 import { formatFullCurrency, formatDate, getStatusBadge, getInitials } from '../utils.js';
 import { showModal } from '../components/modal.js';
@@ -14,9 +15,12 @@ export default function renderCustomers(container) {
   const perm = auth.getPermission('customers');
 
   let page = 1;
+  let custDateFrom = '';
+  let custDateTo = '';
 
   const render = () => {
-    const customers = store.get('customers');
+    // Sắp xếp khách hàng mới nhất lên đầu
+    const customers = store.get('customers').sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     const orders = store.get('orders');
     const debts = store.get('debts');
 
@@ -66,9 +70,18 @@ export default function renderCustomers(container) {
       </div>
 
       <div class="card">
-        <div class="card-header">
+        <div class="card-header" style="flex-wrap:wrap;gap:8px">
           <h3>Danh sách Khách hàng</h3>
-          <input type="text" id="cust-search" class="form-input" placeholder="Tìm theo tên, SĐT..." style="width:220px" />
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input type="text" id="cust-search" class="form-input" placeholder="Tìm theo tên, SĐT..." style="width:190px" />
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--bg-tertiary);border-radius:var(--radius-md);border:1px solid var(--border-color)">
+              <span style="font-size:12px;color:var(--text-muted);white-space:nowrap">Từ</span>
+              <input type="date" id="cust-date-from" class="form-input" style="width:130px;padding:4px 8px;font-size:12px" value="${custDateFrom}" />
+              <span style="font-size:12px;color:var(--text-muted)">→</span>
+              <input type="date" id="cust-date-to" class="form-input" style="width:130px;padding:4px 8px;font-size:12px" value="${custDateTo}" />
+              <button class="btn btn-ghost btn-sm" id="cust-date-clear" style="padding:4px 8px;font-size:11px;color:var(--text-muted)">× Xóa</button>
+            </div>
+          </div>
         </div>
         <div class="data-table-wrapper">
           <table class="data-table">
@@ -101,24 +114,44 @@ export default function renderCustomers(container) {
       }
     }
 
-    renderTablePage(customers);
+    function getFiltered() {
+      const q    = (container.querySelector('#cust-search')?.value || '').toLowerCase();
+      const from = container.querySelector('#cust-date-from')?.value || custDateFrom;
+      const to   = container.querySelector('#cust-date-to')?.value || custDateTo;
+      let result = customers;
+      if (q) result = result.filter(c => (c.name || '').toLowerCase().includes(q) || (c.phone || c.contact || '').includes(q));
+      if (from) {
+        const d = new Date(from);
+        result = result.filter(c => c.createdAt && new Date(c.createdAt) >= d);
+      }
+      if (to) {
+        const d = new Date(to); d.setHours(23, 59, 59, 999);
+        result = result.filter(c => c.createdAt && new Date(c.createdAt) <= d);
+      }
+      return result;
+    }
 
-    // Search
-    container.querySelector('#cust-search')?.addEventListener('input', e => {
-      const q = e.target.value.toLowerCase();
-      const filtered = q
-        ? customers.filter(c => (c.name || '').toLowerCase().includes(q) || (c.phone || c.contact || '').includes(q))
-        : customers;
-      renderTablePage(filtered, 1);
+    renderTablePage(getFiltered());
+
+    // Search & date filters
+    container.querySelector('#cust-search')?.addEventListener('input', () => renderTablePage(getFiltered(), 1));
+    container.querySelector('#cust-date-from')?.addEventListener('change', e => { custDateFrom = e.target.value; renderTablePage(getFiltered(), 1); });
+    container.querySelector('#cust-date-to')?.addEventListener('change', e => { custDateTo = e.target.value; renderTablePage(getFiltered(), 1); });
+    container.querySelector('#cust-date-clear')?.addEventListener('click', () => {
+      custDateFrom = ''; custDateTo = '';
+      container.querySelector('#cust-date-from').value = '';
+      container.querySelector('#cust-date-to').value = '';
+      renderTablePage(getFiltered(), 1);
     });
 
     // Add customer
     container.querySelector('#btn-add-customer')?.addEventListener('click', () => openCustomerModal(null, render));
 
     // Row actions (delegate)
-    container.addEventListener('click', e => {
+    container.addEventListener('click', async e => {
       const viewBtn = e.target.closest('[data-action="view-cust"]');
       const editBtn = e.target.closest('[data-action="edit-cust"]');
+      const deleteBtn = e.target.closest('[data-action="delete-cust"]');
       if (viewBtn) {
         const c = store.getById('customers', viewBtn.dataset.id);
         if (c) openCustomerDetail(c, orders, debts, perm, render);
@@ -126,6 +159,22 @@ export default function renderCustomers(container) {
       if (editBtn) {
         const c = store.getById('customers', editBtn.dataset.id);
         if (c && perm === 'full') openCustomerModal(c, render);
+      }
+      if (deleteBtn && auth.isDirector()) {
+        const c = store.getById('customers', deleteBtn.dataset.id);
+        if (!c) return;
+        const cOrders = store.get('orders').filter(o => o.customerId === c.id);
+        if (cOrders.length > 0) {
+          showToast(`Không thể xóa! "${c.name}" còn ${cOrders.length} đơn hàng liên quan. Hãy xóa đơn hàng trước.`, 'error');
+          return;
+        }
+        // Xóa các công nợ không liên kết đơn hàng (nhập tay)
+        const cDebts = store.get('debts').filter(d => d.partnerId === c.id);
+        if (!confirm(`Xóa vĩnh viễn khách hàng "${c.name}"?${cDebts.length ? `\n• ${cDebts.length} khoản công nợ liên quan cũng sẽ bị xóa.` : ''}`)) return;
+        for (const d of cDebts) await store.remove('debts', d.id, true);
+        await store.remove('customers', c.id, true);
+        showToast(`Đã xóa khách hàng "${c.name}"!`, 'success');
+        render();
       }
     });
   };
@@ -178,6 +227,7 @@ function renderRows(customers, orders, debts) {
         <div style="display:flex;gap:4px">
           <button class="btn btn-icon btn-ghost btn-sm" data-action="view-cust" data-id="${c.id}" title="Xem hồ sơ">${ICONS.eye}</button>
           <button class="btn btn-icon btn-ghost btn-sm" data-action="edit-cust" data-id="${c.id}" title="Chỉnh sửa">${ICONS.edit}</button>
+          ${auth.isDirector() ? `<button class="btn btn-icon btn-ghost btn-sm" style="color:var(--accent-rose)" data-action="delete-cust" data-id="${c.id}" title="Xóa khách hàng">${ICONS.trash}</button>` : ''}
         </div>
       </td>
     </tr>`;
@@ -297,7 +347,7 @@ function openCustomerModal(customer, onSuccess) {
     if (isEdit) {
       await store.update('customers', customer.id, data);
     } else {
-      await store.add('customers', { id: store.generateId('KH'), ...data, createdAt: new Date().toISOString() });
+      await store.add('customers', { id: store.generateId('KH', 'customers'), ...data, createdAt: new Date().toISOString() });
     }
 
     modal.close();

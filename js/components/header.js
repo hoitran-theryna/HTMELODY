@@ -2,7 +2,6 @@
 // ERP SYSTEM - HEADER COMPONENT
 // ============================================
 
-import auth from '../auth.js';
 import store from '../store.js';
 import { ICONS } from './icons.js';
 
@@ -60,7 +59,12 @@ export function renderHeader() {
     </header>`;
 }
 
+let _clockInterval = null;
+
 export function startClock() {
+  // Xóa interval cũ nếu header được render lại
+  if (_clockInterval) clearInterval(_clockInterval);
+
   const update = () => {
     const el = document.getElementById('clock-time');
     if (el) {
@@ -69,7 +73,7 @@ export function startClock() {
     }
   };
   update();
-  setInterval(update, 1000);
+  _clockInterval = setInterval(update, 1000);
 }
 
 export function initHeaderEvents() {

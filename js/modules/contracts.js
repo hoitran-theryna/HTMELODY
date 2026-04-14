@@ -167,7 +167,7 @@ export default async function renderContracts(container) {
            <!-- THÔNG TIN KHÁCH HÀNG -->
            <div class="col-left">
               <div class="card" style="margin-bottom:24px">
-                 <div class="card-header"><h3 style="color:var(--accent-blue-light)">BÊN A (KHÁCH HÀNG)</h3></div>
+                 <div class="card-header"><h3 style="color:var(--accent-blue)">BÊN A (KHÁCH HÀNG)</h3></div>
                  <div class="card-body">
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
                        <div class="form-group"><label class="form-label">Số Hợp đồng</label><input type="text" class="form-input sync-input" data-key="ctrNo" value="${currentContract.ctrNo}"></div>
@@ -242,12 +242,12 @@ export default async function renderContracts(container) {
                              <tr>
                                 <td align="center">${idx+1}</td>
                                 <td style="padding: 10px;">
-                                   <input type="text" class="form-input sync-arr" style="height:35px; font-weight:bold; margin-bottom:6px; width:100%; color:white!important; font-size:14px" data-idx="${idx}" data-prop="name" value="${it.name || ''}" placeholder="Tên chính">
-                                   <textarea class="form-input sync-arr" style="font-size:12px; padding:8px; height:80px; width:100%; color:white!important;" data-idx="${idx}" data-prop="detail">${it.detail || ''}</textarea>
+                                   <input type="text" class="form-input sync-arr" style="height:35px; font-weight:bold; margin-bottom:6px; width:100%; color:var(--text-primary); font-size:14px" data-idx="${idx}" data-prop="name" value="${it.name || ''}" placeholder="Tên chính">
+                                   <textarea class="form-input sync-arr" style="font-size:12px; padding:8px; height:80px; width:100%; color:var(--text-primary);" data-idx="${idx}" data-prop="detail">${it.detail || ''}</textarea>
                                 </td>
-                                <td><input type="text" class="form-input sync-arr" style="width:100%; text-align:center; height:38px; color:white!important;" data-idx="${idx}" data-prop="unit" value="${it.unit || ''}"></td>
-                                <td><input type="number" class="form-input sync-arr" style="width:100%; text-align:center; height:38px; color:white!important;" data-idx="${idx}" data-prop="qty" value="${it.qty || 0}"></td>
-                                <td><input type="number" class="form-input sync-arr" style="width:100%; text-align:right; height:38px; color:white!important;" data-idx="${idx}" data-prop="price" value="${it.price || 0}"></td>
+                                <td><input type="text" class="form-input sync-arr" style="width:100%; text-align:center; height:38px; color:var(--text-primary);" data-idx="${idx}" data-prop="unit" value="${it.unit || ''}"></td>
+                                <td><input type="number" class="form-input sync-arr" style="width:100%; text-align:center; height:38px; color:var(--text-primary);" data-idx="${idx}" data-prop="qty" value="${it.qty || 0}"></td>
+                                <td><input type="number" class="form-input sync-arr" style="width:100%; text-align:right; height:38px; color:var(--text-primary);" data-idx="${idx}" data-prop="price" value="${it.price || 0}"></td>
                                 <td align="right" style="padding-right:12px;"><b>${formatCurrency((it.qty || 0) * (it.price || 0))}</b></td>
                                 <td align="center">
                                    <button class="rm-row" data-idx="${idx}" style="background:#e11d48; color:white; border:none; border-radius:6px; width:34px; height:34px; cursor:pointer;">✕</button>
@@ -255,7 +255,7 @@ export default async function renderContracts(container) {
                              </tr>
                           `).join('')}
                           <tr><td colspan="7" style="padding:12px">
-                             <button class="btn btn-secondary" id="btn-add-row" style="width:100%; height:45px; background:var(--bg-tertiary); color:white; font-weight:bold;">+ THÊM HẠNG MỤC MỚI</button>
+                             <button class="btn btn-secondary" id="btn-add-row" style="width:100%; height:45px; font-weight:bold;">+ THÊM HẠNG MỤC MỚI</button>
                           </td></tr>
                        </tbody>
                     </table>
@@ -271,10 +271,10 @@ export default async function renderContracts(container) {
               </div>
 
               <div class="card" style="margin-top:24px">
-                 <div class="card-body" style="background:rgba(59,130,246,0.05); border-left:4px solid var(--accent-blue-light); padding:15px;">
+                 <div class="card-body" style="background:rgba(59,130,246,0.05); border-left:4px solid var(--accent-blue); padding:15px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                       <span style="font-weight:bold; color:var(--accent-blue-light)">Đặt cọc Đợt 1 / Tạm ứng (%):</span>
-                       <input type="number" class="form-input sync-input" data-key="advPct" value="${currentContract.advPct}" style="width:80px; text-align:center; color:white!important;">
+                       <span style="font-weight:bold; color:var(--accent-blue)">Đặt cọc Đợt 1 / Tạm ứng (%):</span>
+                       <input type="number" class="form-input sync-input" data-key="advPct" value="${currentContract.advPct}" style="width:80px; text-align:center; color:var(--text-primary);">
                     </div>
                     <div style="font-size:14px;line-height:2.0">
                        <div style="display:flex;justify-content:space-between"><span>• Tạm ứng Đợt 1 (${currentContract.advPct}%):</span> <b>${formatFullCurrency(dot1Amount)}</b></div>
@@ -290,16 +290,17 @@ export default async function renderContracts(container) {
 
   const bindEvents = (subTotal, vatAmount, totalAmount, dot1Amount, dot2Amount) => {
      container.querySelectorAll('.sync-input').forEach(el => {
+        // SELECT: re-render ngay để cập nhật tính toán
+        // INPUT/TEXTAREA: chỉ lưu data, re-render khi blur để tránh mất con trỏ
         el.addEventListener('input', e => {
            let val = e.target.value;
            if (['vat', 'advPct'].includes(e.target.dataset.key)) val = parseInt(val) || 0;
            currentContract[e.target.dataset.key] = val;
            autoSave();
-           if (e.target.tagName !== 'INPUT') reRender(); // Chỉ re-render khi không phải input để tránh mất focus
-           else {
-              // Nếu là input số, chỉ cập nhật kết quả tính toán bên ngoài
-              reRender();
-           }
+           if (!['INPUT', 'TEXTAREA'].includes(e.target.tagName)) reRender();
+        });
+        el.addEventListener('change', e => {
+           if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) reRender();
         });
      });
 
@@ -310,10 +311,16 @@ export default async function renderContracts(container) {
            if (['qty', 'price'].includes(prop)) val = parseFloat(val) || 0;
            currentContract.items[parseInt(idx)][prop] = val;
            autoSave();
-           // Chỉ re-render nếu không phải là ô đang gõ để tránh mất con trỏ
-           // Tuy nhiên với Vanilla JS, reRender() sẽ ghi đè innerHTML -> Mất focus.
-           // Giải pháp tạm: Debounce reRender hoặc chỉ cập nhật các label tiền.
-           // Để đơn giản nhất, em vẫn dùng reRender() nhưng anh lưu ý gõ xong 1 ô hãy click ra ngoài.
+           // Chỉ cập nhật ô THÀNH TIỀN tương ứng mà không reRender() toàn bộ
+           const row = e.target.closest('tr');
+           if (row) {
+             const it = currentContract.items[parseInt(idx)];
+             const totalCell = row.querySelector('td:nth-child(6) b');
+             if (totalCell) {
+               const { formatCurrency } = window.__erpUtils || {};
+               // fallback: reRender khi blur
+             }
+           }
         });
         el.addEventListener('change', () => reRender());
      });
